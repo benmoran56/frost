@@ -28,6 +28,34 @@ def make_circle(x, y, radius, color1, color2, steps=10):
     return vertices, colors
 
 
+def make_dot_circle(x, y, radius, color1, color2, steps=10):
+    b = radius
+    c1 = color1
+    c2 = color2
+    inner_points = []
+
+    for i in range(0, 361, steps):
+        r = -radians(i)
+        inner_points.extend((round(cos(r), 3), round(sin(r), 3)))
+
+    vertices = []
+    colors = []
+    last = None
+
+    for point in zip(inner_points[0::2], inner_points[1::2]):
+        if not last:
+            last = point
+            continue
+        triangle = x, y, x+last[0]*b, y+last[1]*b, x+point[0]*b, y+point[1]*b
+        color = c1 + c2 + c2
+
+        vertices.extend(triangle)
+        colors.extend(color)
+        last = point
+
+    return vertices, colors
+
+
 def make_corner(x, y, start_deg, end_deg, border_width, color1, color2):
     b = border_width
     c1 = color1
@@ -81,6 +109,26 @@ def calculate_top(x, y, width, height, border, color1, color2):
              x, y,  x + width, y,  x + width - b, y + height]
     colors = list(color1 + color1 + color2 + color2 + color2 + color1)
     return verts, colors
+
+
+def simple_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
+    w = width
+    h = height
+    b = border
+    m = menusize
+    c1 = color1
+    c2 = color2
+
+    bottom = x, y, x+w, y, x+w, y+b,  x, y, x+w, y+b, x, y+b
+    bottom_c = c2 + c2 + c2 + c2 + c2 + c2
+    left = x, y+b, x+b, y+b, x+b, y+h-m,  x+b, y+h-m, x, y+h-m, x, y+b
+    left_c = c1 + c2 + c2 + c2 + c1 + c1
+    right = x+w-b, y+b,   x+w, y+b,   x+w, y+h-m,    x+w, y+h-m, x+w-b, y+h-m, x+w-b, y+b
+    right_c = c2 + c1 + c1 + c1 + c2 + c2
+    top = x, y+h-m, x+w, y+h-m, x+w, y+h,  x+w, y+h, x, y+h, x, y+h-m
+    top_c = c2 + c2 + c1 + c1 + c1 + c2
+
+    return bottom + left + right + top, bottom_c + left_c + right_c + top_c
 
 
 def calculate_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
