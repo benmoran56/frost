@@ -5,7 +5,7 @@ from pyglet.gl import GL_TRIANGLES
 
 
 class Frame:
-    def __init__(self, window, x, y, width, height, batch=None, group=None):
+    def __init__(self, window, title, x, y, width, height, batch=None):
         self._window = window
         self._x = x
         self._y = y
@@ -18,16 +18,19 @@ class Frame:
         self._color2 = 50, 50, 50
 
         self._batch = batch or pyglet.graphics.Batch()
-        self._group = group or pyglet.graphics.Group()
-        self._title = None         # pyglet.text.Label
+        self._bgroup = pyglet.graphics.OrderedGroup(order=0)
+        self._tgroup = pyglet.graphics.OrderedGroup(order=1)
 
-        self._widgets = []
+        self._title = pyglet.text.Label(title, bold=True, batch=self._batch, group=self._tgroup)
+        self._title.x = x + 5
+        self._title.y = y + height - self._title.content_height
 
         verts, colors = simple_frame(x=x, y=y, width=width, height=height, border=self._border,
                                      menusize=self._menusize, color1=self._color1, color2=self._color2)
-
-        self.vertex_list = self._batch.add(len(verts) // 2, GL_TRIANGLES, None, ('v2f', verts), ('c3b', colors))
+        self.vertex_list = self._batch.add(len(verts) // 2, GL_TRIANGLES, self._bgroup, ('v2f', verts), ('c3b', colors))
         self.in_update = False
+
+        self._widgets = []
 
         self._window.push_handlers(self)
 
@@ -40,18 +43,8 @@ class Frame:
         if batch is self._batch:
             return
         batch = batch or pyglet.graphics.Batch()
-        self._batch.migrate(self.vertex_list, GL_TRIANGLES, self._group, batch)
+        self._batch.migrate(self.vertex_list, GL_TRIANGLES, self._bgroup, batch)
         self._batch = batch
-
-    @property
-    def group(self):
-        return self._group
-
-    @group.setter
-    def group(self, group):
-        if self._group is group:
-            return
-        self._batch.migrate(self.vertex_list, GL_TRIANGLES, self._group, self._batch)
 
     def add_widget(self, widget):
         self._widgets.append(widget)
@@ -75,5 +68,7 @@ class Frame:
         vertices[0::2] = [x + dx for x in vertices[0::2]]
         vertices[1::2] = [y + dy for y in vertices[1::2]]
         self.vertex_list.vertices[:] = vertices
+        self._title.x += dx
+        self._title.y += dy
         self._x += dx
         self._y += dy

@@ -4,7 +4,7 @@ import frost
 window = pyglet.window.Window(width=960, height=540)
 batch = pyglet.graphics.Batch()
 
-frame = frost.Frame(window, 30, 20, 200, 300, batch)
+frame = frost.Frame(window, "Title", 30, 20, 200, 300, batch)
 
 
 @window.event
