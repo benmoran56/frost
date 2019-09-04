@@ -1,4 +1,5 @@
-from .primitives import *
+from .primitives import simple_frame
+
 
 import pyglet
 from pyglet.gl import GL_TRIANGLES
@@ -19,9 +20,9 @@ class Frame:
 
         self._batch = batch or pyglet.graphics.Batch()
         self._bgroup = pyglet.graphics.OrderedGroup(order=0)
-        self._tgroup = pyglet.graphics.OrderedGroup(order=1)
+        self._fgroup = pyglet.graphics.OrderedGroup(order=1)
 
-        self._title = pyglet.text.Label(title, bold=True, batch=self._batch, group=self._tgroup)
+        self._title = pyglet.text.Label(title, bold=True, batch=self._batch, group=self._fgroup)
         self._title.x = x + 5
         self._title.y = y + height - self._title.content_height
 
@@ -49,6 +50,8 @@ class Frame:
     def add_widget(self, widget):
         self._widgets.append(widget)
         self._window.push_handlers(widget)
+        verts, colors = widget.calculate_verts(10, 10)
+        self._batch.add(len(verts) // 2, GL_TRIANGLES, self._fgroup, ('v2f', verts), ('c3b', colors))
 
     def check_hit(self, x, y):
         return (self._x < x < self._x + self._width and

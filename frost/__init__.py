@@ -1,5 +1,5 @@
 from .frame import Frame
-from .widgets import Button
+from .widgets import *
 
 
 __all__ = ["Frame"]
