@@ -83,18 +83,6 @@ from math import *
 #     return vertices, colors
 
 
-def create_left_right(x, y, width, height, color1, color2):
-    verts = x, y, x + width, y, x + width, y + height, x + width, y + height, x, y + height, x, y
-    colors = color1 + color2 + color2 + color2 + color1 + color1
-    return verts, colors
-
-
-def create_top_bottom(x, y, width, height, color1, color2):
-    verts = x, y, x + width, y, x + width, y + height, x + width, y + height, x, y + height, x, y
-    colors = color1 + color1 + color2 + color2 + color2 + color1
-    return verts, colors
-
-
 def _create_left(x, y, width, height, color1, color2):
     one = x, y
     two = x, y + height
@@ -144,22 +132,6 @@ def _create_center(x, y, width, height, color):
     colors = color * 6
     return verts, colors
 
-# def calculate_bottom(x, y, width, height, border, color1,  color2):
-#     b = border
-#     verts = [x, y,  x + width, y,  x + width - b, y + height,
-#              x + width, y + height,  x + b, y + height,  x, y]
-#     colors = list(color1 + color1 + color2 + color2 + color2 + color1)
-#     return verts, colors
-#
-#
-# def calculate_top(x, y, width, height, border, color1, color2):
-#     b = border
-#     verts = [x + width, y + height,  x + b, y + height,  x, y,
-#              x, y,  x + width, y,  x + width - b, y + height]
-#     colors = list(color1 + color1 + color2 + color2 + color2 + color1)
-#     return verts, colors
-#
-#
 # def calculate_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
 #     b = border
 #     m = menusize
@@ -203,7 +175,7 @@ def simple_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25)
     return bottom + left + right + top, bottom_c + left_c + right_c + top_c
 
 
-def checkbox(x, y, width, height, border, color1=(25, 25, 25), color2=(50, 50, 50)):
+def checkbox(x, y, width, height, border, color1=(150, 150, 150), color2=(100, 100, 100), checked=True):
     w = width
     h = height
     b = border
@@ -212,11 +184,10 @@ def checkbox(x, y, width, height, border, color1=(25, 25, 25), color2=(50, 50, 5
     left, left_c = _create_left(x, y, border, height, color1, color2)
     right, right_c = _create_right(x + width - b, y, border, height, color2, color1)
     top, top_c = _create_top(x, y + h - b, width, border, color2, color1)
+    center_color = (150,) if checked else (0,)
+    center, center_c = _create_center(x + b, y + b, w - b*2, h - b*2, color=center_color * 3)
 
-    # TODO: make center segment. Not working yet.
-    # center, center_c = _create_center(x + b, y + b, w - b, height - b, color=(0, 255, 0))
-
-    verts = bottom + left + right + top
-    colors = bottom_c + left_c + right_c + top_c
+    verts = bottom + left + right + top + center
+    colors = bottom_c + left_c + right_c + top_c + center_c
 
     return verts, colors

@@ -53,7 +53,7 @@ class Frame:
         self._widgets.append(widget)
         self._window.push_handlers(widget)
         verts, colors = widget.calculate_verts(*self._get_widget_position())
-        widget.vertex_list = self._batch.add(len(verts)//2, GL_TRIANGLES, self._fgroup, ('v2f', verts), ('c3b', colors))
+        widget.vertex_list = self._batch.add(len(verts)//2, GL_TRIANGLES, self._fgroup, ('v2f', verts), ('c3B', colors))
 
     def check_hit(self, x, y):
         return (self._x < x < self._x + self._width and
