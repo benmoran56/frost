@@ -32,7 +32,6 @@ class Frame:
         self.in_update = False
 
         self._widgets = []
-
         self._window.push_handlers(self)
 
     @property
@@ -47,11 +46,14 @@ class Frame:
         self._batch.migrate(self.vertex_list, GL_TRIANGLES, self._bgroup, batch)
         self._batch = batch
 
+    def _get_widget_position(self):
+        return self._x + self._border + self._border, self._height - self._menusize
+
     def add_widget(self, widget):
         self._widgets.append(widget)
         self._window.push_handlers(widget)
-        verts, colors = widget.calculate_verts(10, 10)
-        self._batch.add(len(verts) // 2, GL_TRIANGLES, self._fgroup, ('v2f', verts), ('c3b', colors))
+        verts, colors = widget.calculate_verts(*self._get_widget_position())
+        widget.vertex_list = self._batch.add(len(verts)//2, GL_TRIANGLES, self._fgroup, ('v2f', verts), ('c3b', colors))
 
     def check_hit(self, x, y):
         return (self._x < x < self._x + self._width and
@@ -67,11 +69,18 @@ class Frame:
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if not self.in_update:
             return
-        vertices = self.vertex_list.vertices[:]
-        vertices[0::2] = [x + dx for x in vertices[0::2]]
-        vertices[1::2] = [y + dy for y in vertices[1::2]]
-        self.vertex_list.vertices[:] = vertices
+
+        # Update the menu title position:
         self._title.x += dx
         self._title.y += dy
+
+        # Update all widget, and frame positions:
+        for widget in self._widgets + [self]:
+            vertices = widget.vertex_list.vertices[:]
+            vertices[0::2] = [x + dx for x in vertices[0::2]]
+            vertices[1::2] = [y + dy for y in vertices[1::2]]
+            widget.vertex_list.vertices[:] = vertices
+
+        # Save the new position:
         self._x += dx
         self._y += dy

@@ -158,22 +158,13 @@ def checkbox(x, y, width, height, border, color1=(25, 25, 25), color2=(50, 50, 5
     w = width
     h = height
     b = border
-    c1 = color1
-    c2 = color2
 
     # TODO: blend corners
 
-    bottom = x, y, x+w, y, x+w, y+b,  x, y, x+w, y+b, x, y+b
-    left = x, y+b, x+b, y+b, x+b, y+h,  x+b, y+h, x, y+h, x, y+b
-    right = x+w-b, y+b,   x+w, y+b,  x+w, y+h,   x+w, y+h, x+w-b, y+h, x+w-b, y+b
-    top = x, y+h, x+w, y+h, x+w, y+h,  x+w, y+h, x, y+h, x, y+h
     bottom, bottom_c = create_top_bottom(x, y, width, border, color1, color2)
-    top, top_c = create_top_bottom(x, y+h-b, width, border, color1, color2)
-
-    # bottom_c = c2 + c2 + c2 + c2 + c2 + c2
-    left_c = c1 + c2 + c2 + c2 + c1 + c1
-    right_c = c2 + c1 + c1 + c1 + c2 + c2
-    # top_c = c2 + c2 + c1 + c1 + c1 + c2
+    left, left_c = create_left_right(x, y, border, height, color1, color2)
+    right, right_c = create_left_right(x+width-b, y, border, height, color2, color1)
+    top, top_c = create_top_bottom(x, y+h-b, width, border, color2, color1)
 
     verts = bottom + left + right + top
     colors = bottom_c + left_c + right_c + top_c
