@@ -137,14 +137,13 @@ class Slider(Widget):
         self.__del__()
         self._x = x
         self._y = y
-        # self._set_knob_position()
+        self._knob_x = x
         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x)
         self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
     def _check_hit(self, x, y):
-        kx = self._knob_x + self._x
-        return kx < x < kx + self._knob_w and self._y < y < self._y + self._height
+        return self._x < x < self._x + self._width and self._y < y < self._y + self._height
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self._check_hit(x, y):
@@ -152,8 +151,7 @@ class Slider(Widget):
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self._in_update:
-            self._knob_x += dx
-            self._knob_x = max(0, min(self._knob_x, self._width - self._knob_w))
+            self._knob_x = max(self._x, min(x, self._x + self._width))
             self.create_verts(self._x, self._y)
 
     def on_mouse_release(self, x, y, buttons, modifiers):

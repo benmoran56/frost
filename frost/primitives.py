@@ -199,9 +199,9 @@ def slider(x, y, width, height, bar, color1=(150, 150, 150), color2=(100, 100, 1
     b = bar
 
     bar_offset = height // 2 - bar // 2
-    center, center_c = _create_center(x, y + bar_offset, w, b, color1)
 
-    knob, knob_c = _create_center(x + position, y, h//2, h, color2)
+    center, center_c = _create_center(x, y + bar_offset, w, b, color1)
+    knob, knob_c = _create_center(position, y, h//2, h, color2)
 
     verts = center + knob
     colors = center_c + knob_c
