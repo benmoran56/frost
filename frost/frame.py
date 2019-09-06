@@ -66,10 +66,6 @@ class Frame:
         if not self.in_update:
             return
 
-        # Update the menu title position:
-        self._title.x += dx
-        self._title.y += dy
-
         # Update all widget, and frame positions:
         for widget in self._widgets:
             widget.update_verts(dx, dy)
@@ -78,6 +74,10 @@ class Frame:
         vertices[0::2] = [x + dx for x in vertices[0::2]]
         vertices[1::2] = [y + dy for y in vertices[1::2]]
         self.vertex_list.vertices[:] = vertices
+
+        # Update the menu title position:
+        self._title.x += dx
+        self._title.y += dy
 
         # Save the new position:
         self._x += dx

@@ -16,7 +16,7 @@ class Widget(EventDispatcher):
         self.batch = None
         self.group = None
         self._vertex_list = None
-        self.label = None
+        self._label = None
 
         self._value = 0
 
@@ -48,9 +48,9 @@ class Widget(EventDispatcher):
             vertices[0::2] = [x + dx for x in vertices[0::2]]
             vertices[1::2] = [y + dy for y in vertices[1::2]]
             self._vertex_list.vertices[:] = vertices
-        if self.label:
-            self.label.x += dx
-            self.label.y += dy
+        if self._label:
+            self._label.x += dx
+            self._label.y += dy
 
     def _check_hit(self, x, y):
         pass
@@ -67,6 +67,8 @@ class Widget(EventDispatcher):
     def __del__(self):
         if self._vertex_list:
             self._vertex_list.delete()
+        if self._label:
+            self._label.delete()
 
     def on_change(self, value):
         """Dispatched when value changes.
@@ -85,13 +87,10 @@ class CheckBox(Widget):
         self.name = name
 
     def create_verts(self, x, y):
-        if self._vertex_list:
-            self._vertex_list.delete()
-        if self.label:
-            self.label.delete()
+        self.__del__()
         self._x = x
         self._y = y
-        self.label = Label(self.name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self.name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
         self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
@@ -103,7 +102,3 @@ class CheckBox(Widget):
             self._value = not self._value
             self.create_verts(*self.position)
             self.dispatch_event('on_change', self._value)
-
-    def __del__(self):
-        if self._vertex_list:
-            self._vertex_list.delete()
