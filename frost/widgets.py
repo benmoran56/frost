@@ -178,3 +178,59 @@ class TextEntry(Widget):
         verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
         self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
+
+class FrozenLabel(Widget):
+    """Anchor point for pyglet label, handled through Frosty"""
+    def __init__(self, name="", text=""):
+        super().__init__(width=1, height=1, name=name)
+        self.text = text
+        self._x = None
+        self._y = None
+
+    def create_verts(self, x, y):
+        self.__del__()
+        self._x = x
+        self._y = y
+        self._label = Label(self.text, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        #self._vertex_list = no vertices should be needed or used
+
+    @property
+    def text(self):
+        return self.text
+
+    @text.setter
+    def text(self, text):
+        self.text = text
+        if self._x:
+            self.create_verts(self._x, self._y)
+
+
+class LinkedLabel(FrozenLabel):
+
+    def _update_text(self):
+        if self.obj:
+            self._lastvals = (getattr(self.obj, attr, "None") for attr in self.attrs)
+            self.text = self.ftext % str(self._lastvals)
+        else:
+            self.text = self.ftext % (" " for i in range(self.ftext.count("%s")))
+
+    def _scary_update_text(self):
+        """only use if obj is known to exist"""
+        self._lastvals = (getattr(self.obj, attr, "None") for attr in self.attrs)
+        self.text = self.ftext % str(self._lastvals)
+
+    def __init__(self, name="", formatted_text="", obj=None, attrs=()):
+        """where formatted_text is a string with a number of '%s' tokens equivalent to length of attrs
+         attrs should be a tuple of string-ified attribute names for obj.
+         these are str'd and then formatted into the label at the %s"""
+        super().__init__(name=name, text=formatted_text)
+        self.obj = obj
+        self.attrs = attrs
+        self.ftext = formatted_text
+        self._lastvals = None
+
+    def update(self, dt):
+        if self.obj:
+            vals = getattr(self.obj, self.attrs, "None")
+            if vals != self._lastvals:
+                self._scary_update_text()
