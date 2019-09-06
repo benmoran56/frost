@@ -19,6 +19,11 @@ slider = frost.Slider(name="Slidy")
 frame.add_widget(slider)
 
 
+@slider.event
+def on_change(value):
+    print("Slider:", value)
+
+
 @window.event
 def on_draw():
     window.clear()

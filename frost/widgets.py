@@ -114,49 +114,43 @@ class Slider(Widget):
         self._max = maximum
 
         self._knob_h = self._height
-        self._knob_w = self._height // 2
+        self._knob_w = self._height // 4
         self._knob_x = 0
 
         self._in_update = False
-
-    @property
-    def value(self):
-        return self._value
-
-    @value.setter
-    def value(self, value):
-        self._value = value
-        self.dispatch_event('on_change', value)
-
-    # def _set_knob_position(self):
-    #     self._knob_x = self._x  # TODO: value scaled
-    #     self._knob_max = self._knob_x + self._width - self._knob_w
-    #     # percent = ((self._value - self._min) * 100) / (self._max - self._min)
 
     def create_verts(self, x, y):
         self.__del__()
         self._x = x
         self._y = y
-        self._knob_x = x
+        self._knob_x = self._knob_x or x
         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
-        verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x)
+        verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x - self._knob_w)
         self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
     def _check_hit(self, x, y):
         return self._x < x < self._x + self._width and self._y < y < self._y + self._height
 
+    def _update_knob(self, x):
+        self._knob_x = max(self._x, min(x, self._x + self._width))
+        # TODO: set percentage of self._min/self._max value, not 1-100:
+        self.value = abs(((self._knob_x - self._x) * 100) / (self._x - self._width - self._x))
+
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self._check_hit(x, y):
             self._in_update = True
+            self._update_knob(x)
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self._in_update:
-            self._knob_x = max(self._x, min(x, self._x + self._width))
-            self.create_verts(self._x, self._y)
+            self._update_knob(x)
+
+    def on_mouse_scroll(self, x, y, mouse, direction):
+        if self._check_hit(x, y):
+            self._update_knob(self._knob_x + direction)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         self._in_update = False
-        # update value from knob position
 
 
 class TextEntry(Widget):
