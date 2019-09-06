@@ -6,7 +6,7 @@ from pyglet.gl import GL_TRIANGLES
 
 
 class Frame:
-    def __init__(self, window, title, x, y, width, height, batch=None):
+    def __init__(self, window, title, x, y, width, height):
         self._window = window
         self._x = x
         self._y = y
@@ -18,7 +18,7 @@ class Frame:
         self._color1 = 25, 25, 25
         self._color2 = 50, 50, 50
 
-        self._batch = batch or pyglet.graphics.Batch()
+        self._batch = pyglet.graphics.Batch()
         self._bgroup = pyglet.graphics.OrderedGroup(order=0)
         self._fgroup = pyglet.graphics.OrderedGroup(order=1)
 
@@ -35,16 +35,8 @@ class Frame:
         self._window.push_handlers(self)
 
     @property
-    def batch(self):
-        return self._batch
-
-    @batch.setter
-    def batch(self, batch):
-        if batch is self._batch:
-            return
-        batch = batch or pyglet.graphics.Batch()
-        self._batch.migrate(self.vertex_list, GL_TRIANGLES, self._bgroup, batch)
-        self._batch = batch
+    def position(self):
+        return self._x, self._y
 
     def _get_widget_position(self):
         return self._x + self._border + self._border, self._height - self._menusize
@@ -52,8 +44,9 @@ class Frame:
     def add_widget(self, widget):
         self._widgets.append(widget)
         self._window.push_handlers(widget)
-        verts, colors = widget.calculate_verts(*self._get_widget_position())
-        widget.vertex_list = self._batch.add(len(verts)//2, GL_TRIANGLES, self._fgroup, ('v2f', verts), ('c3B', colors))
+        widget.batch = self._batch
+        widget.group = self._fgroup
+        widget.create_verts(*self._get_widget_position())
 
     def check_hit(self, x, y):
         return (self._x < x < self._x + self._width and
@@ -75,12 +68,17 @@ class Frame:
         self._title.y += dy
 
         # Update all widget, and frame positions:
-        for widget in self._widgets + [self]:
-            vertices = widget.vertex_list.vertices[:]
-            vertices[0::2] = [x + dx for x in vertices[0::2]]
-            vertices[1::2] = [y + dy for y in vertices[1::2]]
-            widget.vertex_list.vertices[:] = vertices
+        for widget in self._widgets:
+            widget.update_verts(dx, dy)
+
+        vertices = self.vertex_list.vertices[:]
+        vertices[0::2] = [x + dx for x in vertices[0::2]]
+        vertices[1::2] = [y + dy for y in vertices[1::2]]
+        self.vertex_list.vertices[:] = vertices
 
         # Save the new position:
         self._x += dx
         self._y += dy
+
+    def draw(self):
+        self._batch.draw()

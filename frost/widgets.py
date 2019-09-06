@@ -1,4 +1,5 @@
 from pyglet.event import EventDispatcher
+from pyglet.gl import GL_TRIANGLES
 
 from .primitives import *
 
@@ -11,7 +12,10 @@ class Widget(EventDispatcher):
         self._width = width
         self._height = height
 
-        self.vertex_list = None
+        self.batch = None
+        self.group = None
+        self._vertex_list = None
+        self.label = None
 
         self._value = 0
 
@@ -19,31 +23,45 @@ class Widget(EventDispatcher):
     def position(self):
         return self._x, self._y
 
-    @position.setter
-    def position(self, value):
-        self._x, self._y = value
-        if self.vertex_list:
-            vertices = self.vertex_list.vertices[:]
-            vertices[0::2] = [x + value[0] for x in vertices[0::2]]
-            vertices[1::2] = [y + value[1] for y in vertices[1::2]]
+    @property
+    def value(self):
+        return self._value
 
-    def calculate_verts(self, x, y):
+    @value.setter
+    def value(self, value):
+        self._value = value
+        self.dispatch_event('on_change', value)
+
+    def create_verts(self, x, y):
         raise NotImplementedError
 
+    def update_verts(self, dx, dy):
+        self._x += dx
+        self._y += dy
+        if self._vertex_list:
+            vertices = self._vertex_list.vertices[:]
+            vertices[0::2] = [x + dx for x in vertices[0::2]]
+            vertices[1::2] = [y + dy for y in vertices[1::2]]
+            self._vertex_list.vertices[:] = vertices
+        if self.label:
+            self.label.x += dx
+            self.label.y += dy
+
     def _check_hit(self, x, y):
-        return (self._x < x < self._x + self._width and
-                self._y + self._height < y < self._y + self._height)
+        pass
 
     def on_mouse_press(self, x, y, buttons, modifiers):
-        if self._check_hit(x, y):
-            pass
+        pass
+
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        pass
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         pass
 
     def __del__(self):
-        if self.vertex_list:
-            self.vertex_list.delete()
+        if self._vertex_list:
+            self._vertex_list.delete()
 
     def on_change(self, value):
         """Dispatched when value changes.
@@ -57,28 +75,26 @@ Widget.register_event_type('on_change')
 
 class CheckBox(Widget):
 
-    def __init__(self, x, y, width=16, height=16):
+    def __init__(self, x=0, y=0, width=16, height=16):
         super().__init__(x, y, width, height)
 
-    def calculate_verts(self, x, y):
+    def create_verts(self, x, y):
+        if self._vertex_list:
+            self._vertex_list.delete()
         self._x = x
         self._y = y
-        return checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
+        verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
+        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
     def _check_hit(self, x, y):
-        return (self._x < x < self._x + self._width and
-                self._y + self._height < y < self._y + self._height)
+        return self._x < x < self._x + self._width and self._y < y < self._y + self._height
 
     def on_mouse_press(self, x, y, buttons, modifiers):
-        print(x, y)
         if self._check_hit(x, y):
             self._value = not self._value
+            self.create_verts(*self.position)
             self.dispatch_event('on_change', self._value)
 
-    def on_mouse_release(self, x, y, buttons, modifiers):
-        pass
-
     def __del__(self):
-        if self.vertex_list:
-            self.vertex_list.delete()
-
+        if self._vertex_list:
+            self._vertex_list.delete()

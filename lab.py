@@ -2,19 +2,23 @@ import pyglet
 import frost
 
 window = pyglet.window.Window(width=960, height=540)
-batch = pyglet.graphics.Batch()
 fps_display = pyglet.window.FPSDisplay(window)
 
-frame = frost.Frame(window, "Title", 30, 20, 200, 300, batch)
-checkbox = frost.CheckBox(10, 10)
+frame = frost.Frame(window, "Title", x=30, y=20, width=200, height=300)
 
+checkbox = frost.CheckBox()
 frame.add_widget(checkbox)
+
+
+@checkbox.event
+def on_change(value):
+    print("Changed!!", value)
 
 
 @window.event
 def on_draw():
     window.clear()
-    batch.draw()
+    frame.draw()
     fps_display.draw()
 
 
