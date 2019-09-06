@@ -1,4 +1,5 @@
 from pyglet.event import EventDispatcher
+from pyglet.text import Label
 from pyglet.gl import GL_TRIANGLES
 
 from .primitives import *
@@ -6,9 +7,9 @@ from .primitives import *
 
 class Widget(EventDispatcher):
 
-    def __init__(self, x, y, width, height):
-        self._x = x
-        self._y = y
+    def __init__(self, width, height):
+        self._x = 0
+        self._y = 0
         self._width = width
         self._height = height
 
@@ -18,6 +19,10 @@ class Widget(EventDispatcher):
         self.label = None
 
         self._value = 0
+
+    @property
+    def height(self):
+        return self._height
 
     @property
     def position(self):
@@ -75,14 +80,18 @@ Widget.register_event_type('on_change')
 
 class CheckBox(Widget):
 
-    def __init__(self, x=0, y=0, width=16, height=16):
-        super().__init__(x, y, width, height)
+    def __init__(self, name=""):
+        super().__init__(width=16, height=16)
+        self.name = name
 
     def create_verts(self, x, y):
         if self._vertex_list:
             self._vertex_list.delete()
+        if self.label:
+            self.label.delete()
         self._x = x
         self._y = y
+        self.label = Label(self.name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
         self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
