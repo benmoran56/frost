@@ -155,7 +155,7 @@ def _create_center(x, y, width, height, color):
 #     return vertices, colors
 
 
-def simple_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
+def frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
     w = width
     h = height
     b = border
@@ -189,5 +189,21 @@ def checkbox(x, y, width, height, border, color1=(150, 150, 150), color2=(100, 1
 
     verts = bottom + left + right + top + center
     colors = bottom_c + left_c + right_c + top_c + center_c
+
+    return verts, colors
+
+
+def slider(x, y, width, height, bar, color1=(150, 150, 150), color2=(100, 100, 100), position=0):
+    w = width
+    h = height
+    b = bar
+
+    bar_offset = height // 2 - bar // 2
+    center, center_c = _create_center(x, y + bar_offset, w, b, color1)
+
+    knob, knob_c = _create_center(x + position, y, h//2, h, color2)
+
+    verts = center + knob
+    colors = center_c + knob_c
 
     return verts, colors

@@ -6,13 +6,17 @@ fps_display = pyglet.window.FPSDisplay(window)
 
 frame = frost.Frame(window, "Title", x=30, y=20, width=200, height=300)
 
-for i in range(3):
+for i in range(2):
     checkbox = frost.CheckBox(name="Testing!!")
     frame.add_widget(checkbox)
 
     @checkbox.event
     def on_change(value):
         print("Changed!!", value)
+
+
+slider = frost.Slider(name="Slidy")
+frame.add_widget(slider)
 
 
 @window.event

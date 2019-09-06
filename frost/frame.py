@@ -1,4 +1,4 @@
-from .primitives import simple_frame
+from .primitives import frame
 
 
 import pyglet
@@ -26,8 +26,8 @@ class Frame:
         self._title.x = x + 5
         self._title.y = y + height - self._title.content_height
 
-        verts, colors = simple_frame(x=x, y=y, width=width, height=height, border=self._border,
-                                     menusize=self._menusize, color1=self._color1, color2=self._color2)
+        verts, colors = frame(x=x, y=y, width=width, height=height, border=self._border,
+                              menusize=self._menusize, color1=self._color1, color2=self._color2)
         self.vertex_list = self._batch.add(len(verts) // 2, GL_TRIANGLES, self._bgroup, ('v2f', verts), ('c3b', colors))
         self.in_update = False
 

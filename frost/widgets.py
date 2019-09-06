@@ -7,11 +7,12 @@ from .primitives import *
 
 class Widget(EventDispatcher):
 
-    def __init__(self, width, height):
+    def __init__(self, width, height, name):
         self._x = 0
         self._y = 0
         self._width = width
         self._height = height
+        self._name = name
 
         self.batch = None
         self.group = None
@@ -35,12 +36,14 @@ class Widget(EventDispatcher):
     @value.setter
     def value(self, value):
         self._value = value
+        self.create_verts(self._x, self._y)
         self.dispatch_event('on_change', value)
 
     def create_verts(self, x, y):
         raise NotImplementedError
 
     def update_verts(self, dx, dy):
+        """Call with delta x/y to move existing vertices."""
         self._x += dx
         self._y += dy
         if self._vertex_list:
@@ -83,14 +86,13 @@ Widget.register_event_type('on_change')
 class CheckBox(Widget):
 
     def __init__(self, name=""):
-        super().__init__(width=16, height=16)
-        self.name = name
+        super().__init__(width=16, height=16, name=name)
 
     def create_verts(self, x, y):
         self.__del__()
         self._x = x
         self._y = y
-        self._label = Label(self.name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
         self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
@@ -102,3 +104,77 @@ class CheckBox(Widget):
             self._value = not self._value
             self.create_verts(*self.position)
             self.dispatch_event('on_change', self._value)
+
+
+class Slider(Widget):
+
+    def __init__(self, name="", minimum=0, maximum=100):
+        super().__init__(width=64, height=16, name=name)
+        self._min = minimum
+        self._max = maximum
+
+        self._knob_h = self._height
+        self._knob_w = self._height // 2
+        self._knob_x = 0
+        self._knob_min = 0
+        self._knob_max = 0
+
+        self._in_update = False
+
+    @property
+    def value(self):
+        return self._value
+
+    @value.setter
+    def value(self, value):
+        self._value = value
+        self.dispatch_event('on_change', value)
+
+    # def _set_knob_position(self):
+    #     self._knob_x = self._x  # TODO: value scaled
+    #     self._knob_max = self._knob_x + self._width - self._knob_w
+    #     # percent = ((self._value - self._min) * 100) / (self._max - self._min)
+
+    def create_verts(self, x, y):
+        self.__del__()
+        # TODO: calculate knob_x from _value
+        self._x = x
+        self._y = y
+        # self._set_knob_position()
+        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x)
+        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
+
+    def _check_hit(self, x, y):
+        return self._knob_x < x < self._knob_x + self._knob_w and self._y < y < self._y + self._height
+
+    def on_mouse_press(self, x, y, buttons, modifiers):
+        if self._check_hit(x, y):
+            self._in_update = True
+
+    def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
+        # if self._in_update:
+            kx = self._knob_x
+            kx += dx
+
+            # min(self._knob_x, self._knob_max)
+            self.create_verts(self._x, self._y)
+
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        self._in_update = False
+        # update value from knob position
+
+
+class TextEntry(Widget):
+
+    def __init__(self, name=""):
+        super().__init__(width=64, height=16, name=name)
+
+    def create_verts(self, x, y):
+        self.__del__()
+        self._x = x
+        self._y = y
+        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
+        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
+
