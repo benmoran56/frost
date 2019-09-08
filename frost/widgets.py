@@ -1,6 +1,6 @@
 from pyglet.event import EventDispatcher
 from pyglet.text import Label
-from pyglet.gl import GL_TRIANGLES
+from pyglet.gl import GL_TRIANGLES, GL_LINES
 
 from .primitives import *
 
@@ -163,8 +163,8 @@ class TextEntry(Widget):
         self._x = x
         self._y = y
         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
-        verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
-        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
+        verts, colors = textbox(x=x, y=y, width=self._width, height=self._height)
+        self._vertex_list = self.batch.add(len(verts)//2, GL_LINES, self.group, ('v2f', verts), ('c3B', colors))
 
 
 class FrozenLabel(Widget):

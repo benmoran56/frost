@@ -132,6 +132,17 @@ def _create_center(x, y, width, height, color):
     colors = color * 6
     return verts, colors
 
+
+def _line_box(x, y, width, height, color):
+    one = x, y
+    two = x + width, y
+    three = x + width, y + height
+    four = x, y + height
+    verts = one + two + two + three + three + four + four + one
+    colors = color * 8
+    return verts, colors
+
+
 # def calculate_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
 #     b = border
 #     m = menusize
@@ -207,3 +218,7 @@ def slider(x, y, width, height, bar, color1=(150, 150, 150), color2=(100, 100, 1
     colors = center_c + knob_c
 
     return verts, colors
+
+
+def textbox(x, y, width, height, color=(150, 150, 150)):
+    return _line_box(x, y, width, height, color)
