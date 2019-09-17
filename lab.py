@@ -9,6 +9,9 @@ for i in range(2):
     frame.add_widget(checkbox)
     slider = frost.Slider(name="slidey")
     frame.add_widget(slider)
+    lilabel = frost.LinkedLabel("label", "slidey value: %s", slider, ("value",))
+
+    frame.add_widget(lilabel)
 
     @slider.event
     def on_change(value):
@@ -27,6 +30,7 @@ frame.add_widget(text_entry)
 def on_draw():
     window.clear()
     frame.draw()
+    lilabel.update()
 
 
 if __name__ == "__main__":

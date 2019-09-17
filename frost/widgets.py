@@ -168,57 +168,59 @@ class TextEntry(Widget):
 
 
 class FrozenLabel(Widget):
-    """Anchor point for pyglet label, handled through Frosty"""
+    """Anchor point for pyglet label, handled through Frost"""
     def __init__(self, name="", text=""):
-        super().__init__(width=1, height=1, name=name)
-        self.text = text
+        super().__init__(width=1, height=16, name=name)
+        self._text = text
         self._x = None
         self._y = None
+
 
     def create_verts(self, x, y):
         self.__del__()
         self._x = x
         self._y = y
-        self._label = Label(self.text, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self._text, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         #self._vertex_list = no vertices should be needed or used
 
     @property
     def text(self):
-        return self.text
+        return self._text
 
     @text.setter
     def text(self, text):
-        self.text = text
+        self._text = text
         if self._x:
             self.create_verts(self._x, self._y)
 
 
 class LinkedLabel(FrozenLabel):
 
-    def _update_text(self):
+    def _soft_update_text(self):
         if self.obj:
-            self._lastvals = (getattr(self.obj, attr, "None") for attr in self.attrs)
-            self.text = self.ftext % str(self._lastvals)
+            self._lastvals = tuple(getattr(self.obj, attr, "None") for attr in self.attrs)
+            self.text = self.ftext % tuple(str(lv) for lv in self._lastvals)
         else:
-            self.text = self.ftext % (" " for i in range(self.ftext.count("%s")))
+            self.text = self.ftext % tuple(" " for i in range(self.ftext.count("%s")))
 
     def _scary_update_text(self):
         """only use if obj is known to exist"""
-        self._lastvals = (getattr(self.obj, attr, "None") for attr in self.attrs)
-        self.text = self.ftext % str(self._lastvals)
+        lastvals = tuple(getattr(self.obj, attr, "None") for attr in self.attrs)
+        if lastvals != self._lastvals:
+            self._lastvals = lastvals
+            self.text = self.text = self.ftext % tuple(str(lv) for lv in self._lastvals)
 
     def __init__(self, name="", formatted_text="", obj=None, attrs=()):
         """where formatted_text is a string with a number of '%s' tokens equivalent to length of attrs
          attrs should be a tuple of string-ified attribute names for obj.
          these are str'd and then formatted into the label at the %s"""
-        super().__init__(name=name, text=formatted_text)
+        super().__init__(name=name, text="")
         self.obj = obj
         self.attrs = attrs
         self.ftext = formatted_text
         self._lastvals = None
+        self._soft_update_text()
 
-    def update(self, dt):
+    def update(self, dt = 0):
         if self.obj:
-            vals = getattr(self.obj, self.attrs, "None")
-            if vals != self._lastvals:
-                self._scary_update_text()
+            self._scary_update_text()
