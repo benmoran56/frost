@@ -123,6 +123,16 @@ def _create_top(x, y, width, height, color1, color2):
     return verts, colors
 
 
+def _create_frame_top(x, y, width, height, menusize, color1, color2):
+    one = x + height, y - menusize
+    two = x + width - height, y - menusize
+    three = x + width, y + height
+    four = x, y + height
+    verts = one + two + three + three + one + four
+    colors = color1 + color1 + color2 + color2 + color1 + color2
+    return verts, colors
+
+
 def _create_center(x, y, width, height, color):
     one = x, y
     two = x + width, y
@@ -143,29 +153,6 @@ def _line_box(x, y, width, height, color):
     return verts, colors
 
 
-# def calculate_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
-#     b = border
-#     m = menusize
-#
-#     tlcv, tlcc = make_corner(x+b, y+height-b, 180, 270, border, color1, color2)
-#     trcv, trcc = make_corner(x+width-b, y+height-b, 270, 360, border, color1, color2)
-#     brcv, brcc = make_corner(x+width-b, y+b, 0, 90, border, color1, color2)
-#     blcv, blcc = make_corner(x+b, y+b, 90, 180, border, color1, color2)
-#
-#     tb, tc = create_top_bottom(x + b, y + height - m, width - b - b, m, color1, color2)
-#
-#     lb, lc = create_left_right(x, y + b, b, height - b - b, color2, color1)
-#     rb, rc = create_left_right(x + width - b, y + b, b, height - b - b, color1, color2)
-#
-#     bb, bc = create_top_bottom(x + b, y, width - b - b, b, color2, color1)
-#     # bb, bc = calculate_bottom(x, y, width, b, border, color2, color1)
-#
-#     vertices = brcv + blcv + tlcv + trcv + lb + bb + rb + tb
-#     colors = brcc + blcc + tlcc + trcc + lc + bc + rc + tc
-#
-#     return vertices, colors
-
-
 def frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
     w = width
     h = height
@@ -174,14 +161,10 @@ def frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color
     c1 = color1
     c2 = color2
 
-    bottom = x, y, x+w, y, x+w, y+b,  x, y, x+w, y+b, x, y+b
-    bottom_c = c2 + c2 + c2 + c2 + c2 + c2
-    left = x, y+b, x+b, y+b, x+b, y+h-m,  x+b, y+h-m, x, y+h-m, x, y+b
-    left_c = c1 + c2 + c2 + c2 + c1 + c1
-    right = x+w-b, y+b,   x+w, y+b,   x+w, y+h-m,    x+w, y+h-m, x+w-b, y+h-m, x+w-b, y+b
-    right_c = c2 + c1 + c1 + c1 + c2 + c2
-    top = x, y+h-m, x+w, y+h-m, x+w, y+h,  x+w, y+h, x, y+h, x, y+h-m
-    top_c = c2 + c2 + c1 + c1 + c1 + c2
+    bottom, bottom_c = _create_bottom(x, y, width, border, color1, color2)
+    left, left_c = _create_left(x, y, border, height, color1, color2)
+    right, right_c = _create_right(x + width - b, y, border, height, color2, color1)
+    top, top_c = _create_frame_top(x, y + h - b, width, b, m, color2, color1)
 
     return bottom + left + right + top, bottom_c + left_c + right_c + top_c
 
