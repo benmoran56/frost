@@ -83,6 +83,34 @@ class Widget(EventDispatcher):
 Widget.register_event_type('on_change')
 
 
+class Button(Widget):
+
+    def __init__(self, name=""):
+        super().__init__(width=48, height=16, name=name)
+
+    def create_verts(self, x, y):
+        self.__del__()
+        self._x = x
+        self._y = y
+        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        verts, colors = button(x=x, y=y, width=self._width, height=self._height, pressed=self._value)
+        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
+
+    def _check_hit(self, x, y):
+        return self._x < x < self._x + self._width and self._y < y < self._y + self._height
+
+    def on_mouse_press(self, x, y, buttons, modifiers):
+        if self._check_hit(x, y):
+            self._value = True
+            self.create_verts(self._x, self._y)
+            self.dispatch_event('on_change', self._value)
+
+    def on_mouse_release(self, x, y, buttons, modifiers):
+        if self._value:
+            self._value = False
+            self.create_verts(self._x, self._y)
+
+
 class CheckBox(Widget):
 
     def __init__(self, name=""):

@@ -205,3 +205,19 @@ def slider(x, y, width, height, bar, color1=(150, 150, 150), color2=(100, 100, 1
 
 def textbox(x, y, width, height, color=(150, 150, 150)):
     return _line_box(x, y, width, height, color)
+
+
+def button(x, y, width, height, color1=(100, 100, 100), color2=(150, 150, 150), pressed=True):
+    b = height / 2
+    c1 = color2 if pressed else color1
+    c2 = color1 if pressed else color2
+
+    bottom, bottom_c = _create_bottom(x, y, width, b, c1, c2)
+    left, left_c = _create_left(x, y, b, height, c1, c2)
+    right, right_c = _create_right(x + width - b, y, b, height, c2, c1)
+    top, top_c = _create_top(x, y + height - b, width, b, c2, c1)
+
+    verts = bottom + left + right + top
+    colors = bottom_c + left_c + right_c + top_c
+
+    return verts, colors

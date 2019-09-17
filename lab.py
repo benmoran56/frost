@@ -25,6 +25,14 @@ for i in range(2):
 text_entry = frost.TextEntry("Input text")
 frame.add_widget(text_entry)
 
+pushbutton = frost.Button("Pushy")
+frame.add_widget(pushbutton)
+
+
+@pushbutton.event
+def on_change(value):
+    print("Button: Pressed!")
+
 
 @window.event
 def on_draw():
