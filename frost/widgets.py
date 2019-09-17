@@ -147,7 +147,7 @@ class Slider(Widget):
 
     def on_mouse_scroll(self, x, y, mouse, direction):
         if self._check_hit(x, y):
-            self._update_knob(self._knob_x + direction)
+            self._update_knob(self._knob_x + direction/4)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         self._in_update = False
