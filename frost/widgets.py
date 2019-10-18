@@ -136,15 +136,11 @@ class CheckBox(Widget):
 
 class Slider(Widget):
 
-    def __init__(self, name="", minimum=0, maximum=100):
+    def __init__(self, name=""):
         super().__init__(width=64, height=16, name=name)
-        self._min = minimum
-        self._max = maximum
-
         self._knob_h = self._height
         self._knob_w = self._height // 4
         self._knob_x = 0
-
         self._in_update = False
 
     def create_verts(self, x, y):
@@ -161,7 +157,6 @@ class Slider(Widget):
 
     def _update_knob(self, x):
         self._knob_x = max(self._x, min(x, self._x + self._width))
-        # TODO: set percentage of self._min/self._max value, not 1-100:
         self.value = abs(((self._knob_x - self._x) * 100) / (self._x - self._width - self._x))
 
     def on_mouse_press(self, x, y, buttons, modifiers):
@@ -195,7 +190,7 @@ class TextEntry(Widget):
         self._vertex_list = self.batch.add(len(verts)//2, GL_LINES, self.group, ('v2f', verts), ('c3B', colors))
 
 
-class FrozenLabel(Widget):
+class AnchoredLabel(Widget):
     """Anchor point for pyglet label, handled through Frost"""
     def __init__(self, name="", text=""):
         super().__init__(width=1, height=16, name=name)
@@ -203,13 +198,12 @@ class FrozenLabel(Widget):
         self._x = None
         self._y = None
 
-
     def create_verts(self, x, y):
         self.__del__()
         self._x = x
         self._y = y
         self._label = Label(self._text, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
-        #self._vertex_list = no vertices should be needed or used
+        # self._vertex_list = no vertices should be needed or used
 
     @property
     def text(self):
@@ -222,7 +216,18 @@ class FrozenLabel(Widget):
             self.create_verts(self._x, self._y)
 
 
-class LinkedLabel(FrozenLabel):
+class LinkedLabel(AnchoredLabel):
+
+    def __init__(self, name="", formatted_text="", obj=None, attrs=()):
+        """where formatted_text is a string with a number of '%s' tokens equivalent to length of attrs
+         attrs should be a tuple of string-ified attribute names for obj.
+         these are str'd and then formatted into the label at the %s"""
+        super().__init__(name=name, text="")
+        self.obj = obj
+        self.attrs = attrs
+        self.ftext = formatted_text
+        self._lastvals = None
+        self._soft_update_text()
 
     def _soft_update_text(self):
         if self.obj:
@@ -238,17 +243,6 @@ class LinkedLabel(FrozenLabel):
             self._lastvals = lastvals
             self.text = self.text = self.ftext % tuple(str(lv) for lv in self._lastvals)
 
-    def __init__(self, name="", formatted_text="", obj=None, attrs=()):
-        """where formatted_text is a string with a number of '%s' tokens equivalent to length of attrs
-         attrs should be a tuple of string-ified attribute names for obj.
-         these are str'd and then formatted into the label at the %s"""
-        super().__init__(name=name, text="")
-        self.obj = obj
-        self.attrs = attrs
-        self.ftext = formatted_text
-        self._lastvals = None
-        self._soft_update_text()
-
-    def update(self, dt = 0):
+    def update(self, dt=0):
         if self.obj:
             self._scary_update_text()
