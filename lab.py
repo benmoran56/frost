@@ -4,29 +4,29 @@ import frost
 window = pyglet.window.Window(width=960, height=540)
 frame = frost.Frame(window, "Title", x=30, y=20, width=200, height=300)
 
-for i in range(2):
-    checkbox = frost.CheckBox(name="Testing!!")
-    frame.add_widget(checkbox)
-    slider = frost.Slider(name="slidey")
-    frame.add_widget(slider)
-    lilabel = frost.LinkedLabel("label", "slidey value: %s", slider, ("value",))
-
-    frame.add_widget(lilabel)
-
-    @slider.event
-    def on_change(value):
-        print("Slider:", value)
-
-    @checkbox.event
-    def on_change(value):
-        print("Checkbox:", value)
-
-
+checkbox = frost.CheckBox(name="Testing!!")
+slider = frost.Slider(name="slidey")
 text_entry = frost.TextEntry("Input text")
-frame.add_widget(text_entry)
-
 pushbutton = frost.Button("Pushy")
+pushbutton2 = frost.Button("Pushy2")
+lilabel = frost.LinkedLabel("label", "slidey value: %s", slider, ("value",))
+
+frame.add_widget(checkbox)
+frame.add_widget(slider)
+frame.add_widget(text_entry)
 frame.add_widget(pushbutton)
+frame.add_widget(pushbutton2)
+frame.add_widget(lilabel)
+
+
+@slider.event
+def on_change(value):
+    print("Slider:", value)
+
+
+@checkbox.event
+def on_change(value):
+    print("Checkbox:", value)
 
 
 @pushbutton.event

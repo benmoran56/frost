@@ -7,6 +7,8 @@ from .primitives import *
 
 class Widget(EventDispatcher):
 
+    _label = Label(" ")
+
     def __init__(self, width, height, name):
         self._x = 0
         self._y = 0
@@ -17,7 +19,6 @@ class Widget(EventDispatcher):
         self.batch = None
         self.group = None
         self._vertex_list = None
-        self._label = None
 
         self._value = 0
 
@@ -86,13 +87,13 @@ Widget.register_event_type('on_change')
 class Button(Widget):
 
     def __init__(self, name=""):
-        super().__init__(width=48, height=16, name=name)
+        super().__init__(width=16, height=16, name=name)
 
     def create_verts(self, x, y):
         self.__del__()
         self._x = x
         self._y = y
-        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self._name, x=x + self._width + 8, y=y,  batch=self.batch, group=self.group, align='center')
         verts, colors = button(x=x, y=y, width=self._width, height=self._height, pressed=self._value)
         self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
 
