@@ -5,11 +5,11 @@ from pyglet.gl import GL_TRIANGLES, GL_LINES
 from .primitives import *
 
 
-class Widget(EventDispatcher):
+class _Widget(EventDispatcher):
 
     _label = Label(" ")
 
-    def __init__(self, width, height, name):
+    def __init__(self, width, height, name=""):
         self._x = 0
         self._y = 0
         self._width = width
@@ -81,10 +81,10 @@ class Widget(EventDispatcher):
         """
 
 
-Widget.register_event_type('on_change')
+_Widget.register_event_type('on_change')
 
 
-class Button(Widget):
+class Button(_Widget):
 
     def __init__(self, name=""):
         super().__init__(width=16, height=16, name=name)
@@ -104,15 +104,16 @@ class Button(Widget):
         if self._check_hit(x, y):
             self._value = True
             self.create_verts(self._x, self._y)
-            self.dispatch_event('on_change', self._value)
+            self.dispatch_event('on_change', True)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         if self._value:
             self._value = False
             self.create_verts(self._x, self._y)
+            self.dispatch_event('on_change', False)
 
 
-class CheckBox(Widget):
+class CheckBox(_Widget):
 
     def __init__(self, name=""):
         super().__init__(width=16, height=16, name=name)
@@ -135,7 +136,7 @@ class CheckBox(Widget):
             self.dispatch_event('on_change', self._value)
 
 
-class Slider(Widget):
+class Slider(_Widget):
 
     def __init__(self, name=""):
         super().__init__(width=64, height=16, name=name)
@@ -177,24 +178,24 @@ class Slider(Widget):
         self._in_update = False
 
 
-class TextEntry(Widget):
+# class TextEntry(_Widget):
+#
+#     def __init__(self, name=""):
+#         super().__init__(width=64, height=16, name=name)
+#
+#     def create_verts(self, x, y):
+#         self.__del__()
+#         self._x = x
+#         self._y = y
+#         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+#         verts, colors = textbox(x=x, y=y, width=self._width, height=self._height)
+#         self._vertex_list = self.batch.add(len(verts)//2, GL_LINES, self.group, ('v2f', verts), ('c3B', colors))
 
-    def __init__(self, name=""):
-        super().__init__(width=64, height=16, name=name)
 
-    def create_verts(self, x, y):
-        self.__del__()
-        self._x = x
-        self._y = y
-        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
-        verts, colors = textbox(x=x, y=y, width=self._width, height=self._height)
-        self._vertex_list = self.batch.add(len(verts)//2, GL_LINES, self.group, ('v2f', verts), ('c3B', colors))
-
-
-class AnchoredLabel(Widget):
+class AnchoredLabel(_Widget):
     """Anchor point for pyglet label, handled through Frost"""
-    def __init__(self, name="", text=""):
-        super().__init__(width=1, height=16, name=name)
+    def __init__(self, text=""):
+        super().__init__(width=1, height=16)
         self._text = text
         self._x = None
         self._y = None
@@ -204,7 +205,7 @@ class AnchoredLabel(Widget):
         self._x = x
         self._y = y
         self._label = Label(self._text, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
-        # self._vertex_list = no vertices should be needed or used
+        # self._vertex_list = no additional vertices are needed
 
     @property
     def text(self):
@@ -219,31 +220,16 @@ class AnchoredLabel(Widget):
 
 class LinkedLabel(AnchoredLabel):
 
-    def __init__(self, name="", formatted_text="", obj=None, attrs=()):
-        """where formatted_text is a string with a number of '%s' tokens equivalent to length of attrs
-         attrs should be a tuple of string-ified attribute names for obj.
-         these are str'd and then formatted into the label at the %s"""
-        super().__init__(name=name, text="")
-        self.obj = obj
-        self.attrs = attrs
-        self.ftext = formatted_text
-        self._lastvals = None
-        self._soft_update_text()
+    def __init__(self, text="", widget=None):
+        """Automatically updating Label
 
-    def _soft_update_text(self):
-        if self.obj:
-            self._lastvals = tuple(getattr(self.obj, attr, "None") for attr in self.attrs)
-            self.text = self.ftext % tuple(str(lv) for lv in self._lastvals)
-        else:
-            self.text = self.ftext % tuple(" " for i in range(self.ftext.count("%s")))
+        LinkedLabels are automatically updated when the
+        attached Widget's value changes.
+        """
+        self._label_text = text
+        self._widget = widget
+        self._widget.on_change = self._update
+        super().__init__(text=f"{text} {widget.value}")
 
-    def _scary_update_text(self):
-        """only use if obj is known to exist"""
-        lastvals = tuple(getattr(self.obj, attr, "None") for attr in self.attrs)
-        if lastvals != self._lastvals:
-            self._lastvals = lastvals
-            self.text = self.text = self.ftext % tuple(str(lv) for lv in self._lastvals)
-
-    def update(self, dt=0):
-        if self.obj:
-            self._scary_update_text()
+    def _update(self, value):
+        self.text = f"{self._label_text} {value}"
