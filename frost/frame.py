@@ -1,11 +1,13 @@
 from .primitives import frame
+from .shaders import FrostGroup, get_default_shader
 
 import pyglet
+
 from pyglet.gl import GL_TRIANGLES
 
 
 class Frame:
-    def __init__(self, window, title, x, y, width, height):
+    def __init__(self, window, title, x, y, width, height, group=None):
         self._window = window
         self._x = x
         self._y = y
@@ -18,8 +20,9 @@ class Frame:
         self._color2 = 50, 50, 50
 
         self._batch = pyglet.graphics.Batch()
-        self._bgroup = pyglet.graphics.OrderedGroup(order=0)
-        self._fgroup = pyglet.graphics.OrderedGroup(order=1)
+        self._program = get_default_shader()
+        self._bgroup = FrostGroup(self._program, order=0, parent=group)
+        self._fgroup = FrostGroup(self._program, order=1, parent=group)
 
         self._title = pyglet.text.Label(title, bold=True, batch=self._batch, group=self._fgroup)
         self._title.x = x + 5
@@ -27,7 +30,10 @@ class Frame:
 
         verts, colors = frame(x=x, y=y, width=width, height=height, border=self._border,
                               menusize=self._menusize, color1=self._color1, color2=self._color2)
-        self.vertex_list = self._batch.add(len(verts) // 2, GL_TRIANGLES, self._bgroup, ('v2f', verts), ('c3b', colors))
+        self._num_verts = len(verts) // 2
+        self.vertex_list = self._program.vertex_list(self._num_verts, GL_TRIANGLES,
+                                                     self._batch, self._bgroup,
+                                                     vertices=('f', verts), colors=('Bn', colors))
         self.in_update = False
 
         self._widget_buffer = 8

@@ -3,7 +3,7 @@ import frost
 
 # Create a Frame object, and attach it to a Window:
 window = pyglet.window.Window(width=960, height=540)
-frame = frost.Frame(window, "Title", x=30, y=20, width=200, height=300)
+frame = frost.Frame(window, "Title", x=400, y=20, width=200, height=300)
 
 
 # Create a selection of Widgets:
