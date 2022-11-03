@@ -1,8 +1,9 @@
-from pyglet.event import EventDispatcher
+from pyglet.gl import GL_TRIANGLES
 from pyglet.text import Label
-from pyglet.gl import GL_TRIANGLES, GL_LINES
+from pyglet.event import EventDispatcher
 
 from .primitives import *
+from .shaders import get_default_shader, FrostGroup
 
 
 class _Widget(EventDispatcher):
@@ -17,10 +18,22 @@ class _Widget(EventDispatcher):
         self._name = name
 
         self.batch = None
-        self.group = None
+        self._program = get_default_shader()
+        self._group = FrostGroup(program=self._program)
         self._vertex_list = None
 
         self._value = 0
+
+    @property
+    def group(self):
+        return self._group.parent
+
+    @group.setter
+    def group(self, group):
+        if self._group.parent == group:
+            return
+        self._group = FrostGroup(self._program, parent=group)
+        # self.batch.migrate(self._vertex_list, GL_TRIANGLES, self._group, self.batch)
 
     @property
     def height(self):
@@ -95,7 +108,9 @@ class Button(_Widget):
         self._y = y
         self._label = Label(self._name, x=x + self._width + 8, y=y,  batch=self.batch, group=self.group, align='center')
         verts, colors = button(x=x, y=y, width=self._width, height=self._height, pressed=self._value)
-        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
+        self._vertex_list = self._program.vertex_list(len(verts)//2, GL_TRIANGLES,
+                                                      self.batch, self._group,
+                                                      vertices=('f', verts), colors=('Bn', colors))
 
     def _check_hit(self, x, y):
         return self._x < x < self._x + self._width and self._y < y < self._y + self._height
@@ -124,7 +139,9 @@ class CheckBox(_Widget):
         self._y = y
         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
-        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
+
+        self._vertex_list = self._program.vertex_list(len(verts)//2, GL_TRIANGLES, self.batch, self._group,
+                                                      vertices=('f', verts), colors=('Bn', colors))
 
     def _check_hit(self, x, y):
         return self._x < x < self._x + self._width and self._y < y < self._y + self._height
@@ -152,7 +169,9 @@ class Slider(_Widget):
         self._knob_x = self._knob_x or x
         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x - self._knob_w)
-        self._vertex_list = self.batch.add(len(verts)//2, GL_TRIANGLES, self.group, ('v2f', verts), ('c3B', colors))
+
+        self._vertex_list = self._program.vertex_list(len(verts)//2, GL_TRIANGLES, self.batch, self._group,
+                                                      vertices=('f', verts), colors=('Bn', colors))
 
     def _check_hit(self, x, y):
         return self._x < x < self._x + self._width and self._y < y < self._y + self._height
@@ -176,20 +195,6 @@ class Slider(_Widget):
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         self._in_update = False
-
-
-# class TextEntry(_Widget):
-#
-#     def __init__(self, name=""):
-#         super().__init__(width=64, height=16, name=name)
-#
-#     def create_verts(self, x, y):
-#         self.__del__()
-#         self._x = x
-#         self._y = y
-#         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
-#         verts, colors = textbox(x=x, y=y, width=self._width, height=self._height)
-#         self._vertex_list = self.batch.add(len(verts)//2, GL_LINES, self.group, ('v2f', verts), ('c3B', colors))
 
 
 class AnchoredLabel(_Widget):
