@@ -1,13 +1,15 @@
 from .primitives import frame
-from .shaders import FrostGroup, get_default_shader
+from .shaders import get_default_shader
 
 import pyglet
 
-from pyglet.gl import GL_TRIANGLES
+
+from pyglet.graphics import GeometryMode, ShaderGroup
+
 
 
 class Frame:
-    def __init__(self, window, title, x, y, width, height, group=None):
+    def __init__(self, window, title, x, y, width, height, group=None, batch=None):
         self._window = window
         self._x = x
         self._y = y
@@ -19,19 +21,19 @@ class Frame:
         self._color1 = 25, 25, 25
         self._color2 = 50, 50, 50
 
-        self._batch = pyglet.graphics.Batch()
+        self._batch = batch or pyglet.graphics.Batch()
         self._program = get_default_shader()
-        self._bgroup = FrostGroup(self._program, order=0, parent=group)
-        self._fgroup = FrostGroup(self._program, order=1, parent=group)
+        self._bgroup = ShaderGroup(self._program, order=0, parent=group)
+        self._fgroup = ShaderGroup(self._program, order=1, parent=group)
 
-        self._title = pyglet.text.Label(title, bold=True, batch=self._batch, group=self._fgroup)
+        self._title = pyglet.text.Label(title, weight="bold", batch=self._batch, group=self._fgroup)
         self._title.x = x + 5
         self._title.y = y + height - self._title.content_height
 
         verts, colors = frame(x=x, y=y, width=width, height=height, border=self._border,
                               menusize=self._menusize, color1=self._color1, color2=self._color2)
         self._num_verts = len(verts) // 2
-        self.vertex_list = self._program.vertex_list(self._num_verts, GL_TRIANGLES,
+        self.vertex_list = self._program.vertex_list(self._num_verts, GeometryMode.TRIANGLES,
                                                      self._batch, self._bgroup,
                                                      vertices=('f', verts), colors=('Bn', colors))
         self.in_update = False
