@@ -1,4 +1,4 @@
-from .primitives import frame
+from .primitives import generate_frame
 from .shaders import get_default_shader
 
 import pyglet
@@ -32,16 +32,23 @@ class Frame:
         self._title.x = x + 5
         self._title.y = y + height - self._title.content_height
 
-        verts, colors = frame(x=x, y=y, width=width, height=height, border=self._border,
-                              menusize=self._menusize, color1=self._color1, color2=self._color2)
-        self._num_verts = len(verts) // 2
-        self.vertex_list = self._program.vertex_list(self._num_verts, GeometryMode.TRIANGLES,
-                                                     self._batch, self._bgroup,
-                                                     vertices=('f', verts), colors=('Bn', colors))
         self.in_update = False
 
         self._widgets = []
         self._window.push_handlers(self)
+
+        self._create_vertex_list()
+
+    def _create_vertex_list(self):
+
+        # TODO: anchor from top-left
+
+        verts, colors = generate_frame(x=self._x, y=self._y, width=self._width, height=self._height,
+                                       border=self._border, menusize=self._menusize,
+                                       color1=self._color1, color2=self._color2)
+        self.vertex_list = self._program.vertex_list(len(verts) // 2, GeometryMode.TRIANGLES,
+                                                     self._batch, self._bgroup,
+                                                     vertices=('f', verts), colors=('Bn', colors))
 
     @property
     def position(self):
@@ -95,3 +102,10 @@ class Frame:
 
     def draw(self):
         self._batch.draw()
+
+    def delete(self):
+        if getattr(self, 'vertex_list'):
+            self.vertex_list.delete()
+
+    def __del__(self):
+        self.delete()

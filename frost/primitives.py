@@ -82,7 +82,7 @@ def _line_box(x, y, width, height, color):
 
 # Pre-defined objects:
 
-def frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
+def generate_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
     b = border
     m = menusize
     bottom, bottom_c = _create_bottom(x, y, width, border, color1, color2)
