@@ -9,15 +9,17 @@ from pyglet.graphics import GeometryMode, ShaderGroup
 
 
 class Frame:
-    def __init__(self, window, title, x, y, width, height, group=None, batch=None):
+    def __init__(self, window, title, x, y, width, height, border=3, group=None, batch=None):
         self._window = window
         self._x = x
         self._y = y
         self._width = width
         self._height = height
 
-        self._border = 3
-        self._menusize = 25
+        self._border = border
+        self._menusize = 24
+        self._widget_buffer = 8
+
         self._color1 = 25, 25, 25
         self._color2 = 50, 50, 50
 
@@ -38,7 +40,6 @@ class Frame:
                                                      vertices=('f', verts), colors=('Bn', colors))
         self.in_update = False
 
-        self._widget_buffer = 8
         self._widgets = []
         self._window.push_handlers(self)
 
@@ -46,10 +47,12 @@ class Frame:
     def position(self):
         return self._x, self._y
 
-    def _get_widget_position(self, new_height):
+    def _get_widget_position(self, widget_height):
         """Automatically offset the position of the new widgets being added."""
-        y_offset = sum([widget.height + self._widget_buffer for widget in self._widgets]) + new_height
-        return self._x + self._border + self._widget_buffer, self._height - self._menusize/2 - self._border - y_offset
+        existing = sum([w.height + self._widget_buffer for w in self._widgets])
+        x = self._x + self._border + self._widget_buffer
+        y = self._y + self._height - self._border - self._menusize - self._widget_buffer - existing - widget_height
+        return x, y
 
     def add_widget(self, widget):
         self._window.push_handlers(widget)
