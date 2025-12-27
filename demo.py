@@ -9,11 +9,11 @@ frame = frost.Frame(window, "Title", x=400, y=20, width=200, height=300)
 # Create a selection of Widgets:
 checkbox1 = frost.CheckBox(name="Checky 1")
 checkbox2 = frost.CheckBox(name="Checky 2")
-anchored_label = frost.AnchoredLabel(text="-- Anchored Label --")
+anchored_label = frost.AnchoredLabel(text="Anchored Label")
 slider = frost.Slider(name="slidey")
-linked_label = frost.LinkedLabel(text="Slidey Value:", widget=slider)
+linked_label = frost.LinkedLabel(text="Slidey Value: ", widget=slider)
 pushbutton = frost.Button(name="Pushy")
-linked_label2 = frost.LinkedLabel(text="Pushy Value:", widget=pushbutton)
+linked_label2 = frost.LinkedLabel(text="Pushy Value: ", widget=pushbutton)
 
 
 # Add Widgets to the Frame, from the top down:

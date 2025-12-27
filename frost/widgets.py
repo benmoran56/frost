@@ -8,8 +8,6 @@ from .shaders import get_default_shader
 
 class _Widget(EventDispatcher):
 
-    _label: Label = None
-
     def __init__(self, width, height, name=""):
         self._x = 0
         self._y = 0
@@ -21,6 +19,7 @@ class _Widget(EventDispatcher):
         self._program = get_default_shader()
         self._group = ShaderGroup(program=self._program)
         self._vertex_list = None
+        self._label = None
 
         self._value = 0
 
@@ -33,7 +32,6 @@ class _Widget(EventDispatcher):
         if self._group.parent == group:
             return
         self._group = ShaderGroup(self._program, parent=group)
-        # self.batch.migrate(self._vertex_list, GeometryMode.TRIANGLES, self._group, self.batch)
 
     @property
     def height(self):
@@ -69,8 +67,8 @@ class _Widget(EventDispatcher):
             self._label.x += dx
             self._label.y += dy
 
-    def _check_hit(self, x, y):
-        pass
+    def check_hit(self, x, y):
+        return self._x < x < self._x + self._width and self._y < y < self._y + self._height
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         pass
@@ -115,11 +113,8 @@ class Button(_Widget):
                                                       self.batch, self._group,
                                                       vertices=('f', verts), colors=('Bn', colors))
 
-    def _check_hit(self, x, y):
-        return self._x < x < self._x + self._width and self._y < y < self._y + self._height
-
     def on_mouse_press(self, x, y, buttons, modifiers):
-        if self._check_hit(x, y):
+        if self.check_hit(x, y):
             self._value = True
             self.create_verts(self._x, self._y)
             self.dispatch_event('on_change', True)
@@ -146,11 +141,8 @@ class CheckBox(_Widget):
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES, self.batch, self._group,
                                                       vertices=('f', verts), colors=('Bn', colors))
 
-    def _check_hit(self, x, y):
-        return self._x < x < self._x + self._width and self._y < y < self._y + self._height
-
     def on_mouse_press(self, x, y, buttons, modifiers):
-        if self._check_hit(x, y):
+        if self.check_hit(x, y):
             self._value = not self._value
             self.create_verts(*self.position)
             self.dispatch_event('on_change', self._value)
@@ -176,15 +168,12 @@ class Slider(_Widget):
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES, self.batch, self._group,
                                                       vertices=('f', verts), colors=('Bn', colors))
 
-    def _check_hit(self, x, y):
-        return self._x < x < self._x + self._width and self._y < y < self._y + self._height
-
     def _update_knob(self, x):
         self._knob_x = max(self._x, min(x, self._x + self._width))
         self.value = abs(((self._knob_x - self._x) * 100) / (self._x - self._width - self._x))
 
     def on_mouse_press(self, x, y, buttons, modifiers):
-        if self._check_hit(x, y):
+        if self.check_hit(x, y):
             self._in_update = True
             self._update_knob(x)
 
@@ -193,7 +182,7 @@ class Slider(_Widget):
             self._update_knob(x)
 
     def on_mouse_scroll(self, x, y, mouse, direction):
-        if self._check_hit(x, y):
+        if self.check_hit(x, y):
             self._update_knob(self._knob_x + direction/4)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
@@ -212,7 +201,7 @@ class AnchoredLabel(_Widget):
         self.delete()
         self._x = x
         self._y = y
-        self._label = Label(self._text, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self._text, x=x + self._width, y=y+2,  batch=self.batch, group=self.group)
         # self._vertex_list = no additional vertices are needed
 
     @property
@@ -237,7 +226,7 @@ class LinkedLabel(AnchoredLabel):
         self._label_text = text
         self._widget = widget
         self._widget.on_change = self._update
-        super().__init__(text=f"{text} {widget.value}")
+        super().__init__(text=f"{text}{widget.value}")
 
     def _update(self, value):
-        self.text = f"{self._label_text} {value}"
+        self.text = f"{self._label_text}{value}"

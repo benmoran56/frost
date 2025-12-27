@@ -1,5 +1,4 @@
 import pyglet
-from pyglet.graphics.api.gl import glBlendFunc, glDisable, glEnable, GL_BLEND, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA
 
 from pyglet.graphics import shader
 
