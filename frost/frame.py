@@ -9,12 +9,13 @@ from pyglet.graphics import GeometryMode, ShaderGroup
 
 
 class Frame:
-    def __init__(self, window, title, x, y, width, height=None, border=3, group=None, batch=None):
+    def __init__(self, window, title, x, y, width, border=3, group=None, batch=None):
         self._window = window
         self._x = x
         self._y = y
+        self._trans_x = 0
+        self._trans_y = 0
         self._width = width
-        self._height = height
 
         self._border = border
         self._menusize = 24
@@ -37,6 +38,8 @@ class Frame:
         self._widgets = []
         self._window.push_handlers(self)
 
+        self._vertex_list = None
+        self._num_verts = 0
         self._update_vertex_list()
 
     def _update_vertex_list(self):
@@ -45,9 +48,14 @@ class Frame:
         verts, colors = generate_frame(x=self._x, y=self._y, width=self._width, height=height,
                                        border=self._border, menusize=self._menusize,
                                        color1=self._color1, color2=self._color2)
+        self._num_verts = len(verts) // 2
+        translation = (self._trans_x, self._trans_y) * self._num_verts
+
         self.vertex_list = self._program.vertex_list(len(verts) // 2, GeometryMode.TRIANGLES,
                                                      self._batch, self._bgroup,
-                                                     position=('f', verts), colors=('Bn', colors))
+                                                     position=('f', verts),
+                                                     colors=('Bn', colors),
+                                                     translation=('f', translation))
 
     @property
     def position(self):
@@ -86,15 +94,6 @@ class Frame:
         if not self.in_update:
             return
 
-        # Update all widget, and frame positions:
-        for widget in self._widgets:
-            widget.update_verts(dx, dy)
-
-        position = self.vertex_list.position[:]
-        position[0::2] = [x + dx for x in position[0::2]]
-        position[1::2] = [y + dy for y in position[1::2]]
-        self.vertex_list.position[:] = position
-
         # Update the menu title position:
         self._title.x += dx
         self._title.y += dy
@@ -102,6 +101,14 @@ class Frame:
         # Save the new position:
         self._x += dx
         self._y += dy
+        self._trans_x += dx
+        self._trans_y += dy
+
+        # Update all widget, and frame translation:
+        for widget in self._widgets:
+            widget.update_verts(dx, dy)
+
+        self.vertex_list.translation[:] = (self._trans_x, self._trans_y) * self._num_verts
 
     def draw(self):
         self._batch.draw()
