@@ -14,14 +14,13 @@ class _Widget(EventDispatcher):
         self._width = width
         self._height = height
         self._name = name
+        self._value = 0
 
         self.batch = None
         self._program = get_default_shader()
         self._group = ShaderGroup(program=self._program)
         self._vertex_list = None
         self._label = None
-
-        self._value = 0
 
     @property
     def group(self):
@@ -70,6 +69,17 @@ class _Widget(EventDispatcher):
     def check_hit(self, x, y):
         return self._x < x < self._x + self._width and self._y < y < self._y + self._height
 
+    def delete(self):
+        if self._vertex_list:
+            self._vertex_list.delete()
+        if self._label:
+            self._label.delete()
+
+    def __del__(self):
+        self.delete()
+
+    # Handlers
+
     def on_mouse_press(self, x, y, buttons, modifiers):
         pass
 
@@ -79,14 +89,7 @@ class _Widget(EventDispatcher):
     def on_mouse_release(self, x, y, buttons, modifiers):
         pass
 
-    def delete(self):
-        if self._vertex_list:
-            self._vertex_list.delete()
-        if self._label:
-            self._label.delete()
-
-    def __del__(self):
-        self.delete()
+    # Events
 
     def on_change(self, value):
         """Dispatched when value changes.
