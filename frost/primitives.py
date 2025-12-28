@@ -85,10 +85,10 @@ def _line_box(x, y, width, height, color):
 def generate_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 25), color2=(50, 50, 50)):
     b = border
     m = menusize
-    bottom, bottom_c = _create_bottom(x, y, width, border, color1, color2)
-    left, left_c = _create_left(x, y, border, height, color1, color2)
-    right, right_c = _create_right(x + width - b, y, border, height, color2, color1)
-    top, top_c = _create_frame_top(x, y + height - b, width, b, m, color2, color1)
+    bottom, bottom_c = _create_bottom(x, y - height, width, border, color1, color2)
+    left, left_c = _create_left(x, y - height, border, height, color1, color2)
+    right, right_c = _create_right(x + width - b, y - height, border, height, color2, color1)
+    top, top_c = _create_frame_top(x, y - b, width, b, m, color2, color1)
 
     return bottom + left + right + top, bottom_c + left_c + right_c + top_c
 

@@ -58,10 +58,10 @@ class _Widget(EventDispatcher):
         self._x += dx
         self._y += dy
         if self._vertex_list:
-            vertices = self._vertex_list.vertices[:]
-            vertices[0::2] = [x + dx for x in vertices[0::2]]
-            vertices[1::2] = [y + dy for y in vertices[1::2]]
-            self._vertex_list.vertices[:] = vertices
+            position = self._vertex_list.position[:]
+            position[0::2] = [x + dx for x in position[0::2]]
+            position[1::2] = [y + dy for y in position[1::2]]
+            self._vertex_list.position[:] = position
         if self._label:
             self._label.x += dx
             self._label.y += dy
@@ -114,7 +114,7 @@ class Button(_Widget):
         verts, colors = button(x=x, y=y, width=self._width, height=self._height, pressed=self._value)
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES,
                                                       self.batch, self._group,
-                                                      vertices=('f', verts), colors=('Bn', colors))
+                                                      position=('f', verts), colors=('Bn', colors))
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self.check_hit(x, y):
@@ -142,7 +142,7 @@ class CheckBox(_Widget):
         verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
 
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES, self.batch, self._group,
-                                                      vertices=('f', verts), colors=('Bn', colors))
+                                                      position=('f', verts), colors=('Bn', colors))
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self.check_hit(x, y):
@@ -169,7 +169,7 @@ class Slider(_Widget):
         verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x - self._knob_w)
 
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES, self.batch, self._group,
-                                                      vertices=('f', verts), colors=('Bn', colors))
+                                                      position=('f', verts), colors=('Bn', colors))
 
     def _update_knob(self, x):
         self._knob_x = max(self._x, min(x, self._x + self._width))

@@ -4,7 +4,7 @@ from pyglet.graphics import shader
 
 
 vertex_source = """#version 150 core
-    in vec2 vertices;
+    in vec2 position;
     in vec2 translation;
     in vec3 colors;
 
@@ -23,7 +23,7 @@ vertex_source = """#version 150 core
         m_translate[3][0] = translation.x;
         m_translate[3][1] = translation.y;
 
-        gl_Position = window.projection * window.view * m_translate * vec4(vertices, 0.0, 1.0);
+        gl_Position = window.projection * window.view * m_translate * vec4(position, 0.0, 1.0);
         vertex_colors = vec4(colors, 1);
     }
 """

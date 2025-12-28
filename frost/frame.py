@@ -9,7 +9,7 @@ from pyglet.graphics import GeometryMode, ShaderGroup
 
 
 class Frame:
-    def __init__(self, window, title, x, y, width, height, border=3, group=None, batch=None):
+    def __init__(self, window, title, x, y, width, height=None, border=3, group=None, batch=None):
         self._window = window
         self._x = x
         self._y = y
@@ -30,47 +30,50 @@ class Frame:
 
         self._title = pyglet.text.Label(title, weight="bold", batch=self._batch, group=self._fgroup)
         self._title.x = x + 5
-        self._title.y = y + height - self._title.content_height
+        self._title.y = y - self._title.content_height
 
         self.in_update = False
 
         self._widgets = []
         self._window.push_handlers(self)
 
-        self._create_vertex_list()
+        self._update_vertex_list()
 
-    def _create_vertex_list(self):
-
-        # TODO: anchor from top-left
-
-        verts, colors = generate_frame(x=self._x, y=self._y, width=self._width, height=self._height,
+    def _update_vertex_list(self):
+        self.delete()
+        height = self._menusize + self._border * 2 + self._widget_buffer + self._widget_stack_height
+        verts, colors = generate_frame(x=self._x, y=self._y, width=self._width, height=height,
                                        border=self._border, menusize=self._menusize,
                                        color1=self._color1, color2=self._color2)
         self.vertex_list = self._program.vertex_list(len(verts) // 2, GeometryMode.TRIANGLES,
                                                      self._batch, self._bgroup,
-                                                     vertices=('f', verts), colors=('Bn', colors))
+                                                     position=('f', verts), colors=('Bn', colors))
 
     @property
     def position(self):
         return self._x, self._y
 
-    def _get_widget_position(self, widget_height):
+    @property
+    def _widget_stack_height(self):
+        return sum([w.height + self._widget_buffer for w in self._widgets])
+
+    def _get_new_widget_position(self, widget_height):
         """Automatically offset the position of the new widgets being added."""
-        existing = sum([w.height + self._widget_buffer for w in self._widgets])
         x = self._x + self._border + self._widget_buffer
-        y = self._y + self._height - self._border - self._menusize - self._widget_buffer - existing - widget_height
+        y = self._y - self._border - self._menusize - self._widget_buffer - widget_height - self._widget_stack_height
         return x, y
 
     def add_widget(self, widget):
         self._window.push_handlers(widget)
         widget.batch = self._batch
         widget.group = self._fgroup
-        widget.create_verts(*self._get_widget_position(widget.height))
+        widget.create_verts(*self._get_new_widget_position(widget.height))
         self._widgets.append(widget)
+        self._update_vertex_list()
 
     def check_hit(self, x, y):
         return (self._x < x < self._x + self._width and
-                self._y + self._height - self._menusize - self._border < y < self._y + self._height)
+                self._y - self._menusize - self._border < y < self._y)
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self.check_hit(x, y):
@@ -87,10 +90,10 @@ class Frame:
         for widget in self._widgets:
             widget.update_verts(dx, dy)
 
-        vertices = self.vertex_list.vertices[:]
-        vertices[0::2] = [x + dx for x in vertices[0::2]]
-        vertices[1::2] = [y + dy for y in vertices[1::2]]
-        self.vertex_list.vertices[:] = vertices
+        position = self.vertex_list.position[:]
+        position[0::2] = [x + dx for x in position[0::2]]
+        position[1::2] = [y + dy for y in position[1::2]]
+        self.vertex_list.position[:] = position
 
         # Update the menu title position:
         self._title.x += dx
@@ -104,7 +107,7 @@ class Frame:
         self._batch.draw()
 
     def delete(self):
-        if getattr(self, 'vertex_list'):
+        if hasattr(self, 'vertex_list'):
             self.vertex_list.delete()
 
     def __del__(self):
