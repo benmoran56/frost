@@ -8,7 +8,7 @@ from .shaders import get_default_shader
 
 class _Widget(EventDispatcher):
 
-    def __init__(self, width, height, name=""):
+    def __init__(self, width=16, height=16, name=""):
         self._x = 0
         self._y = 0
         self._width = width
@@ -233,3 +233,11 @@ class LinkedLabel(AnchoredLabel):
 
     def _update(self, value):
         self.text = f"{self._label_text}{value}"
+
+
+class Spacer(_Widget):
+
+
+
+    def create_verts(self, x, y):
+        """Just a spacer - no need to create anything."""
