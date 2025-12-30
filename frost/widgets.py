@@ -72,8 +72,10 @@ class _Widget(EventDispatcher):
     def delete(self):
         if self._vertex_list:
             self._vertex_list.delete()
+            self._vertex_list = None
         if self._label:
             self._label.delete()
+            self._label = None
 
     def __del__(self):
         self.delete()
@@ -153,8 +155,8 @@ class CheckBox(_Widget):
 
 class Slider(_Widget):
 
-    def __init__(self, name=""):
-        super().__init__(width=64, height=16, name=name)
+    def __init__(self, width=64, height=16, name=""):
+        super().__init__(width=width, height=height, name=name)
         self._knob_h = self._height
         self._knob_w = self._height // 4
         self._knob_x = 0
@@ -171,22 +173,32 @@ class Slider(_Widget):
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES, self.batch, self._group,
                                                       position=('f', verts), colors=('Bn', colors))
 
-    def _update_knob(self, x):
-        self._knob_x = max(self._x, min(x, self._x + self._width))
-        self.value = abs(((self._knob_x - self._x) * 100) / (self._x - self._width - self._x))
+    def _x_to_percentage(self, x):
+        x1 = self._x
+        x2 = self._x + self._width
+        return ((x - x1) / (x2 - x1)) * 100
+
+    def _percent_to_x(self, percentage):
+        x1 = self._x
+        x2 = self._x + self._width
+        return (percentage * (x2 - x1)) / 100 + x1
+
+    def _update_knob(self, value):
+        self._knob_x = self._percent_to_x(max(0, min(100, value)))
+        self.value = self._x_to_percentage(self._knob_x)
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self.check_hit(x, y):
             self._in_update = True
-            self._update_knob(x)
+            self._update_knob(self._x_to_percentage(x))
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self._in_update:
-            self._update_knob(x)
+            self._update_knob(self._x_to_percentage(x))
 
     def on_mouse_scroll(self, x, y, mouse, direction):
         if self.check_hit(x, y):
-            self._update_knob(self._knob_x + direction/4)
+            self._update_knob(self.value + direction)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         self._in_update = False
@@ -236,8 +248,6 @@ class LinkedLabel(AnchoredLabel):
 
 
 class Spacer(_Widget):
-
-
 
     def create_verts(self, x, y):
         """Just a spacer - no need to create anything."""
