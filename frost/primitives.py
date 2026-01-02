@@ -88,9 +88,10 @@ def generate_frame(x, y, width, height, border=2, menusize=10, color1=(25, 25, 2
     bottom, bottom_c = _create_bottom(x, y - height, width, border, color1, color2)
     left, left_c = _create_left(x, y - height, border, height, color1, color2)
     right, right_c = _create_right(x + width - b, y - height, border, height, color2, color1)
+    center, center_c = _create_center(x + b, y - height + b, width - b*2, height - menusize - b, color=(20, 20, 20))
     top, top_c = _create_frame_top(x, y - b, width, b, m, color2, color1)
 
-    return bottom + left + right + top, bottom_c + left_c + right_c + top_c
+    return bottom + left + right + top + center, bottom_c + left_c + right_c + top_c + center_c
 
 
 def checkbox(x, y, width, height, border, color1=(150, 150, 150), color2=(100, 100, 100), checked=True):

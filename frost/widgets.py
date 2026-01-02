@@ -1,4 +1,5 @@
-from pyglet.graphics import GeometryMode, ShaderGroup
+from pyglet.enums import GeometryMode
+from pyglet.graphics import ShaderGroup
 from pyglet.text import Label
 from pyglet.event import EventDispatcher
 
@@ -47,6 +48,7 @@ class _Widget(EventDispatcher):
     @value.setter
     def value(self, value):
         self._value = value
+        self.delete()
         self.create_verts(self._x, self._y)
         self.dispatch_event('on_change', value)
 
@@ -176,7 +178,7 @@ class Slider(_Widget):
     def _x_to_percentage(self, x):
         x1 = self._x
         x2 = self._x + self._width
-        return ((x - x1) / (x2 - x1)) * 100
+        return round(((x - x1) / (x2 - x1)) * 100, 2)
 
     def _percent_to_x(self, percentage):
         x1 = self._x

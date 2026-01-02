@@ -3,7 +3,8 @@ from .shaders import get_default_shader
 
 import pyglet
 
-from pyglet.graphics import GeometryMode, ShaderGroup
+from pyglet.enums import GeometryMode
+from pyglet.graphics import ShaderGroup
 
 
 class Frame:
