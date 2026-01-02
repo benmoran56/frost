@@ -3,14 +3,14 @@ import frost
 
 # Create a Frame object, and attach it to a Window:
 window = pyglet.window.Window()
-frame = frost.Frame(window, "Title", x=100, y=350, width=200, border=3)
-
+frame = frost.Frame("Title", x=100, y=350, width=200, border=3)
+window.push_handlers(frame)
 
 # Create a selection of Widgets:
 checkbox1 = frost.CheckBox(name="Checky 1")
 checkbox2 = frost.CheckBox(name="Checky 2")
 anchored_label = frost.AnchoredLabel(text="Anchored Label")
-slider = frost.Slider(value=50, name="slidey")
+slider = frost.Slider(value=50, width=150, name="slidey")
 linked_label = frost.LinkedLabel(text="Slidey Value: ", widget=slider)
 spacer = frost.Spacer()
 pushbutton = frost.Button(width=32, name="Pushy")
