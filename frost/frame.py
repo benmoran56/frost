@@ -10,8 +10,7 @@ from pyglet.graphics import ShaderGroup
 
 
 class Frame:
-    def __init__(self, window, title, x, y, width, border=3, spacer=8, group=None, batch=None):
-        self._window = window
+    def __init__(self, title, x, y, width, border=3, spacer=8, group=None, batch=None):
         self._x = x
         self._y = y
         self._trans_x = 0
@@ -37,7 +36,6 @@ class Frame:
         self.in_drag = False
 
         self._widgets = []
-        self._window.push_handlers(self)
 
         self._vertex_list = None
         self._update_vertex_list()
