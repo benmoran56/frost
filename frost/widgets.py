@@ -161,21 +161,22 @@ class CheckBox(_Widget):
 
 class Slider(_Widget):
 
-    def __init__(self, width=64, height=16, value=0.0, name=""):
+    def __init__(self, width=64, height=16, value=0.0, maximum=100, name=""):
         super().__init__(width=width, height=height, name=name)
         self._knob_h = self._height
         self._knob_w = self._height // 4
         self._knob_x = 0
         self._value = value
+        self._maximum = maximum
         self._in_update = False
 
     def create_verts(self, x, y):
         self.delete()
         self._x = x
         self._y = y
-        self._value = clamp(self._value, 0, 100)
+        self._value = clamp(self._value, 0, self._maximum)
         # Calculate the x position from the value:
-        self._knob_x = (self._value * (x + self._width - x)) / 100 + x
+        self._knob_x = (self._value * (x + self._width - x)) / self._maximum + x
         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x - self._knob_w)
 
@@ -185,7 +186,7 @@ class Slider(_Widget):
     def _x_to_percentage(self, x):
         x1 = self._x
         x2 = self._x + self._width
-        return round(((x - x1) / (x2 - x1)) * 100, 2)
+        return round(((x - x1) / (x2 - x1)) * self._maximum, 2)
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self.check_hit(x, y):
