@@ -10,10 +10,10 @@ frame = frost.Frame(window, "Title", x=100, y=350, width=200, border=3)
 checkbox1 = frost.CheckBox(name="Checky 1")
 checkbox2 = frost.CheckBox(name="Checky 2")
 anchored_label = frost.AnchoredLabel(text="Anchored Label")
-slider = frost.Slider(name="slidey")
+slider = frost.Slider(value=50, name="slidey")
 linked_label = frost.LinkedLabel(text="Slidey Value: ", widget=slider)
 spacer = frost.Spacer()
-pushbutton = frost.Button(name="Pushy")
+pushbutton = frost.Button(width=32, name="Pushy")
 linked_label2 = frost.LinkedLabel(text="Pushy Value: ", widget=pushbutton)
 
 pending_widgets = [checkbox1, checkbox2, anchored_label, slider, linked_label, spacer, pushbutton, linked_label2]

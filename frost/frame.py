@@ -1,3 +1,5 @@
+from pyglet.event import EVENT_HANDLED, EVENT_UNHANDLED
+
 from .primitives import generate_frame
 from .shaders import get_default_shader
 
@@ -15,6 +17,7 @@ class Frame:
         self._trans_x = 0
         self._trans_y = 0
         self._width = width
+        self._height = 0
         self._color1 = 25, 25, 25
         self._color2 = 50, 50, 50
 
@@ -31,7 +34,7 @@ class Frame:
         self._menusize = self._title.content_height + 5
         self._widget_spacer = spacer
 
-        self.in_update = False
+        self.in_drag = False
 
         self._widgets = []
         self._window.push_handlers(self)
@@ -41,9 +44,9 @@ class Frame:
 
     def _update_vertex_list(self):
         self.delete()
-        height = self._menusize + self._border * 2 + self._widget_stack_height
-        height += self._widget_spacer if self._widget_stack_height else 0   # Don't add the spacer if no widgets
-        verts, colors = generate_frame(x=self._x, y=self._y, width=self._width, height=height,
+        self._height = self._menusize + self._border * 2 + self._widget_stack_height
+        self._height += self._widget_spacer if self._widget_stack_height else 0   # Don't add the spacer if no widgets
+        verts, colors = generate_frame(x=self._x, y=self._y, width=self._width, height=self._height,
                                        border=self._border, menusize=self._menusize,
                                        color1=self._color1, color2=self._color2)
         count = len(verts) // 2
@@ -68,43 +71,68 @@ class Frame:
         return x, y
 
     def add_widget(self, widget):
-        self._window.push_handlers(widget)
         widget.batch = self._batch
         widget.group = self._fgroup
         widget.create_verts(*self._get_new_widget_position(widget.height))
         self._widgets.append(widget)
         self._update_vertex_list()
 
-    def check_hit(self, x, y):
+    def check_menu_hit(self, x, y):
         return (self._x < x < self._x + self._width and
                 self._y - self._menusize - self._border < y < self._y)
 
+    def check_body_hit(self, x, y):
+        return (self._x < x < self._x + self._width and
+                self._y - self._height + self._border < y < self._y - self._menusize - self._border)
+
     def on_mouse_press(self, x, y, buttons, modifiers):
-        if self.check_hit(x, y):
-            self.in_update = True
+        if self.check_menu_hit(x, y):
+            self.in_drag = True
+            return EVENT_HANDLED
+
+        if self.check_body_hit(x, y):
+            for widget in self._widgets:
+                widget.on_mouse_press(x, y, buttons, modifiers)
+            return EVENT_HANDLED
+
+        return EVENT_UNHANDLED
 
     def on_mouse_release(self, x, y, buttons, modifiers):
-        self.in_update = False
+        self.in_drag = False
+        for widget in self._widgets:
+            widget.on_mouse_release(x, y, buttons, modifiers)
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
-        if not self.in_update:
-            return
+        if self.in_drag:
+            # Update the menu title position:
+            self._title.x += dx
+            self._title.y += dy
 
-        # Update the menu title position:
-        self._title.x += dx
-        self._title.y += dy
+            # Save the new position:
+            self._x += dx
+            self._y += dy
+            self._trans_x += dx
+            self._trans_y += dy
 
-        # Save the new position:
-        self._x += dx
-        self._y += dy
-        self._trans_x += dx
-        self._trans_y += dy
+            # Update all widget, and frame translation:
+            for widget in self._widgets:
+                widget.update_verts(dx, dy)
 
-        # Update all widget, and frame translation:
-        for widget in self._widgets:
-            widget.update_verts(dx, dy)
+            self.vertex_list.translation[:] = (self._trans_x, self._trans_y) * self.vertex_list.count
 
-        self.vertex_list.translation[:] = (self._trans_x, self._trans_y) * self.vertex_list.count
+            return EVENT_HANDLED
+
+        if self.check_body_hit(x, y):
+            for widget in self._widgets:
+                widget.on_mouse_drag(x, y, dx, dy, buttons, modifiers)
+            return EVENT_HANDLED
+
+        return EVENT_UNHANDLED
+
+    def on_mouse_scroll(self, x, y, mouse, direction):
+        if self.check_body_hit(x, y):
+            for widget in self._widgets:
+                widget.on_mouse_scroll(x, y, mouse, direction)
 
     def draw(self):
         self._batch.draw()

@@ -94,6 +94,9 @@ class _Widget(EventDispatcher):
     def on_mouse_release(self, x, y, buttons, modifiers):
         pass
 
+    def on_mouse_scroll(self, x, y, mouse, direction):
+        pass
+
     # Events
 
     def on_change(self, value):
@@ -158,11 +161,12 @@ class CheckBox(_Widget):
 
 class Slider(_Widget):
 
-    def __init__(self, width=64, height=16, name=""):
+    def __init__(self, width=64, height=16, value=0.0, name=""):
         super().__init__(width=width, height=height, name=name)
         self._knob_h = self._height
         self._knob_w = self._height // 4
         self._knob_x = 0
+        self._value = value
         self._in_update = False
 
     def create_verts(self, x, y):
