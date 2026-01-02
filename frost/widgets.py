@@ -2,6 +2,7 @@ from pyglet.enums import GeometryMode
 from pyglet.graphics import ShaderGroup
 from pyglet.text import Label
 from pyglet.event import EventDispatcher
+from pyglet.math import clamp
 
 from .primitives import *
 from .shaders import get_default_shader
@@ -50,7 +51,7 @@ class _Widget(EventDispatcher):
         self._value = value
         self.delete()
         self.create_verts(self._x, self._y)
-        self.dispatch_event('on_change', value)
+        self.dispatch_event('on_change', self._value)
 
     def create_verts(self, x, y):
         raise NotImplementedError
@@ -168,7 +169,9 @@ class Slider(_Widget):
         self.delete()
         self._x = x
         self._y = y
-        self._knob_x = self._knob_x or x
+        self._value = clamp(self._value, 0, 100)
+        # Calculate the x position from the value:
+        self._knob_x = (self._value * (x + self._width - x)) / 100 + x
         self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
         verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x - self._knob_w)
 
@@ -185,22 +188,18 @@ class Slider(_Widget):
         x2 = self._x + self._width
         return (percentage * (x2 - x1)) / 100 + x1
 
-    def _update_knob(self, value):
-        self._knob_x = self._percent_to_x(max(0, min(100, value)))
-        self.value = self._x_to_percentage(self._knob_x)
-
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self.check_hit(x, y):
             self._in_update = True
-            self._update_knob(self._x_to_percentage(x))
+            self.value = self._x_to_percentage(x)
 
     def on_mouse_drag(self, x, y, dx, dy, buttons, modifiers):
         if self._in_update:
-            self._update_knob(self._x_to_percentage(x))
+            self.value = self._x_to_percentage(x)
 
     def on_mouse_scroll(self, x, y, mouse, direction):
         if self.check_hit(x, y):
-            self._update_knob(self.value + direction)
+            self.value = self.value + direction
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         self._in_update = False
