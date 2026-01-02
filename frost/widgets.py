@@ -108,8 +108,8 @@ _Widget.register_event_type('on_change')
 
 class Button(_Widget):
 
-    def __init__(self, name=""):
-        super().__init__(width=16, height=16, name=name)
+    def __init__(self, width=16, height=16, name=""):
+        super().__init__(width=width, height=height, name=name)
 
     def create_verts(self, x, y):
         self.delete()
@@ -136,8 +136,8 @@ class Button(_Widget):
 
 class CheckBox(_Widget):
 
-    def __init__(self, name=""):
-        super().__init__(width=16, height=16, name=name)
+    def __init__(self, width=16, height=16, name=""):
+        super().__init__(width=width, height=height, name=name)
 
     def create_verts(self, x, y):
         self.delete()
@@ -182,11 +182,6 @@ class Slider(_Widget):
         x1 = self._x
         x2 = self._x + self._width
         return round(((x - x1) / (x2 - x1)) * 100, 2)
-
-    def _percent_to_x(self, percentage):
-        x1 = self._x
-        x2 = self._x + self._width
-        return (percentage * (x2 - x1)) / 100 + x1
 
     def on_mouse_press(self, x, y, buttons, modifiers):
         if self.check_hit(x, y):
