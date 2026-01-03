@@ -1,3 +1,6 @@
+> [!NOTE]
+> The ``pyglet3`` branch tracks the upcoming pyglet v3.0 release. 
+
 Frost
 =====
 Frost is a very limited widget library for **pyglet**.
