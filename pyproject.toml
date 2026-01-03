@@ -1,6 +1,6 @@
 [build-system]
-requires = ["flit_core"]
-build-backend = "flit_core.buildapi"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "frost"
@@ -8,8 +8,12 @@ authors = [{name = "Benjamin Moran", email = "benmoran@protonmail.com"}]
 readme = "README.md"
 license = {file = "LICENSE.md"}
 classifiers = ["License :: OSI Approved :: MIT License"]
-dynamic = ["version", "description"]
+dynamic = ["version"]
 requires-python = ">=3.8"
+dependencies = ["pyglet"]
 
 [project.urls]
 Home = "https://github.com/benmoran56/frost"
+
+[tool.hatch.version]
+path = "frost/__init__.py"
