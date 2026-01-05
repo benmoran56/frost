@@ -10,6 +10,8 @@ from .shaders import get_default_shader
 
 class _Widget(EventDispatcher):
 
+    label_spacer: int = 8
+
     def __init__(self, width=16, height=16, name=""):
         self._x = 0
         self._y = 0
@@ -33,6 +35,10 @@ class _Widget(EventDispatcher):
         if self._group.parent == group:
             return
         self._group = ShaderGroup(self._program, parent=group)
+
+    @property
+    def width(self):
+        return self._width + (self._label.content_width + self.label_spacer if self._label else 0)
 
     @property
     def height(self):
@@ -118,7 +124,7 @@ class Button(_Widget):
         self.delete()
         self._x = x
         self._y = y
-        self._label = Label(self._name, x=x + self._width + 8, y=y,  batch=self.batch, group=self.group, align='center')
+        self._label = Label(self._name, x=x + self._width + self.label_spacer, y=y, batch=self.batch, group=self.group)
         verts, colors = button(x=x, y=y, width=self._width, height=self._height, pressed=self._value)
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES,
                                                       self.batch, self._group,
@@ -146,7 +152,7 @@ class CheckBox(_Widget):
         self.delete()
         self._x = x
         self._y = y
-        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self._name, x=x + self._width + self.label_spacer, y=y, batch=self.batch, group=self.group)
         verts, colors = checkbox(x=x, y=y, width=self._width, height=self._height, border=4, checked=self._value)
 
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES, self.batch, self._group,
@@ -177,7 +183,7 @@ class Slider(_Widget):
         self._value = clamp(self._value, 0, self._maximum)
         # Calculate the x position from the value:
         self._knob_x = (self._value * (x + self._width - x)) / self._maximum + x
-        self._label = Label(self._name, x=x + self._width + 8, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self._name, x=x + self._width + self.label_spacer, y=y, batch=self.batch, group=self.group)
         verts, colors = slider(x=x, y=y, width=self._width, height=self._height, bar=4, position=self._knob_x - self._knob_w)
 
         self._vertex_list = self._program.vertex_list(len(verts)//2, GeometryMode.TRIANGLES, self.batch, self._group,
@@ -208,7 +214,7 @@ class Slider(_Widget):
 class AnchoredLabel(_Widget):
     """Anchor point for pyglet label, handled through Frost"""
     def __init__(self, text=""):
-        super().__init__(width=1, height=16)
+        super().__init__(width=0, height=16)
         self._text = text
         self._x = None
         self._y = None
@@ -217,7 +223,7 @@ class AnchoredLabel(_Widget):
         self.delete()
         self._x = x
         self._y = y
-        self._label = Label(self._text, x=x + self._width, y=y+2,  batch=self.batch, group=self.group)
+        self._label = Label(self._text, x=x, y=y, batch=self.batch, group=self.group)
         # self._vertex_list = no additional vertices are needed
 
     @property

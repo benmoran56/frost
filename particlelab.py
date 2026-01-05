@@ -19,6 +19,9 @@ partical_man = particles.ParticleManager(img, lifespan=10, count=5,
                                          scale_start=(1.0, 1.0), scale_end=(0.5, 0.5),
                                          batch=batch)
 
+clear = frost.Button(width=32, name='clear all')
+count = frost.Slider(width=100, value=partical_man.count, maximum=50, name='count')
+count_label = frost.LinkedLabel(widget=count)
 velocity_x = frost.Slider(width=150, value=partical_man.velocity[0])
 velocity_x_label = frost.LinkedLabel("velocity x: ", widget=velocity_x)
 velocity_y = frost.Slider(width=150, value=partical_man.velocity[1])
@@ -38,6 +41,10 @@ scale_start_y = frost.Slider(value=partical_man.scale_start[1], maximum=10, name
 scale_end_x = frost.Slider(value=partical_man.scale_end[0], maximum=10, name='end scale x')
 scale_end_y = frost.Slider(value=partical_man.scale_end[1], maximum=10, name='end scale y')
 
+frame.add_widget(clear)
+frame.add_widget(frost.Spacer())
+frame.add_widget(count)
+frame.add_widget(count_label)
 frame.add_widget(velocity_x)
 frame.add_widget(velocity_x_label)
 frame.add_widget(velocity_y)
@@ -59,6 +66,14 @@ frame.add_widget(scale_start_x)
 frame.add_widget(scale_start_y)
 frame.add_widget(scale_end_x)
 frame.add_widget(scale_end_y)
+
+
+for widget in frame._widgets:
+    print(widget, widget.width)
+
+@count.event
+def on_change(value):
+    partical_man.count = int(value)
 
 
 @velocity_x.event
@@ -134,11 +149,22 @@ def on_change(value):
 def on_change(value):
     partical_man.scale_end = partical_man.scale_end[0], value
 
+
+#################################
+
+@clear.event
+def on_change(value):
+    for emitter in active_emmitters:
+        emitter.delete()
+    active_emmitters.clear()
+
+
 ################################
 
 @window.event
 def on_mouse_press(x, y, button, modifiers):
-    partical_man.create_emitter(x, y)
+    emmitter = partical_man.create_emitter(x, y)
+    active_emmitters.append(emmitter)
 
 
 @window.event
