@@ -1,40 +1,40 @@
-from pyglet.event import EVENT_HANDLED, EVENT_UNHANDLED
-
 from .primitives import generate_frame
 from .shaders import get_default_shader
 
 import pyglet
 
 from pyglet.enums import GeometryMode
-from pyglet.graphics import ShaderGroup
+from pyglet.event import EVENT_HANDLED, EVENT_UNHANDLED
 
 
 class Frame:
-    def __init__(self, title, x, y, width, border=3, spacer=8, group=None, batch=None):
+    def __init__(self, title, x, y, border=3, spacer=8, color1=(25, 25, 25), color2=(50, 50, 50), group=None, batch=None):
         self._x = x
         self._y = y
         self._trans_x = 0
         self._trans_y = 0
-        self._width = width
-        self._height = 0
-        self._color1 = 25, 25, 25
-        self._color2 = 50, 50, 50
+        self._color1 = color1
+        self._color2 = color2
 
+        # Rendering related items:
         self._batch = batch or pyglet.graphics.Batch()
         self._program = get_default_shader()
-        self._bgroup = ShaderGroup(self._program, order=0, parent=group)
-        self._fgroup = ShaderGroup(self._program, order=1, parent=group)
+        self._bgroup = pyglet.graphics.ShaderGroup(self._program, order=0, parent=group)
+        self._fgroup = pyglet.graphics.ShaderGroup(self._program, order=1, parent=group)
 
+        # Create and position title label:
         self._title = pyglet.text.Label(title, weight="bold", batch=self._batch, group=self._fgroup)
-        self._title.x = x + 5
+        self._title.x = x + spacer
         self._title.y = y - self._title.content_height
 
+        # Calculate initial sizes:
         self._border = border
-        self._menusize = self._title.content_height + 5
-        self._widget_spacer = spacer
+        self._spacer = spacer
+        self._menusize = self._title.content_height + spacer
+        self._width = self._title.content_width + (spacer * 2)
+        self._height = self._menusize + (self._border * 2)
 
         self.in_drag = False
-
         self._widgets = []
 
         self._vertex_list = None
@@ -42,8 +42,6 @@ class Frame:
 
     def _update_vertex_list(self):
         self.delete()
-        self._height = self._menusize + self._border * 2 + self._widget_stack_height
-        self._height += self._widget_spacer if self._widget_stack_height else 0   # Don't add the spacer if no widgets
         verts, colors = generate_frame(x=self._x, y=self._y, width=self._width, height=self._height,
                                        border=self._border, menusize=self._menusize,
                                        color1=self._color1, color2=self._color2)
@@ -60,12 +58,12 @@ class Frame:
 
     @property
     def _widget_stack_height(self):
-        return sum([w.height + self._widget_spacer for w in self._widgets])
+        return sum([w.height + self._spacer for w in self._widgets])
 
     def _get_new_widget_position(self, widget_height):
         """Automatically offset the position of the new widgets being added."""
-        x = self._x + self._border + self._widget_spacer
-        y = self._y - self._border - self._menusize - self._widget_spacer - widget_height - self._widget_stack_height
+        x = self._x + self._border + self._spacer
+        y = self._y - self._border - self._menusize - self._spacer - widget_height - self._widget_stack_height
         return x, y
 
     def add_widget(self, widget):
@@ -73,6 +71,9 @@ class Frame:
         widget.group = self._fgroup
         widget.create_verts(*self._get_new_widget_position(widget.height))
         self._widgets.append(widget)
+        # Re-calculate the Frame width & height based on the added widgets, then recreate the VertexList:
+        self._width = max(widget.width for widget in self._widgets) + self._border * 2 + self._spacer * 2
+        self._height = self._menusize + self._border * 2 + self._widget_stack_height + self._spacer
         self._update_vertex_list()
 
     def check_menu_hit(self, x, y):

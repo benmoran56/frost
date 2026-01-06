@@ -7,7 +7,7 @@ from pyglet.experimental import particles
 window = pyglet.window.Window(1280, 720)
 batch = pyglet.graphics.Batch()
 # TODO: use same batch
-frame = frost.Frame("Particle Settings", x=25, y=window.height - 25, width=250, border=6)
+frame = frost.Frame("Particle Settings", x=25, y=window.height - 25, border=6)
 
 active_emmitters = []
 
@@ -68,8 +68,12 @@ frame.add_widget(scale_end_x)
 frame.add_widget(scale_end_y)
 
 
+print(frame._width)
+print()
+
+
 for widget in frame._widgets:
-    print(widget, widget.width)
+    print(widget._name, widget.width)
 
 @count.event
 def on_change(value):

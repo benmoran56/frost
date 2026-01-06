@@ -205,7 +205,7 @@ class Slider(_Widget):
 
     def on_mouse_scroll(self, x, y, mouse, direction):
         if self.check_hit(x, y):
-            self.value = self.value + direction
+            self.value = round(self.value + direction, 2)
 
     def on_mouse_release(self, x, y, buttons, modifiers):
         self._in_update = False
